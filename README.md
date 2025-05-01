@@ -1,4 +1,6 @@
-![asd](./docs/Imagens/StarWarsIcon.png)
+<h1 align="center">
+    <img src="https://github.com/SBD1/2025.1-Star_Wars-11/blob/main/docs/Imagens/StarWarsIcon.png" height="250px"alt="Logo">
+</h1>
 
 Repositório para desenvolvimento do jogo Star Wars da disciplina de SBD1 - 2025.1
 
