@@ -1,4 +1,3 @@
-@"
 ## 📌 Descrição
 
 Descreva brevemente o que essa PR faz e por quê.
@@ -31,4 +30,3 @@ Adicione imagens para facilitar a revisão.
 - [ ] Testei localmente
 - [ ] Atualizei a documentação
 - [ ] Não quebrei nada que estava funcionando
-"@ | Out-File -FilePath .github\pull_request_template.md -Encoding utf8
