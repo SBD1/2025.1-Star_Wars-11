@@ -31,7 +31,7 @@ O MER contempla as seguintes entidades principais:
 ## Diagrama Entidade-Relacionamento
 
 <p align="center">
-  <img src="../Imagens/mer_starwars.png" alt="Diagrama MER Star Wars" width="800px">
+  <img src="docs/Imagens/mer_starwars.png" alt="Diagrama MER Star Wars" width="800px">
 </p>
 
 <p align="center"><b>Autores:</b> Artur Mendonça, Amanda Abreu, Filipe Bressanelli, 2025.</p>

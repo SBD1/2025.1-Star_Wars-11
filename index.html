@@ -6,6 +6,7 @@
     <title>Star Wars MUD - SBD1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --star-wars-yellow: #FFE81F;
@@ -41,6 +42,34 @@
         .btn-primary:hover {
             background-color: #ffd700;
             border-color: #ffd700;
+        }
+        #md-content {
+            background: #222;
+            color: #fff;
+            padding: 2em;
+            border-radius: 10px;
+            margin-top: 1em;
+            box-shadow: 0 0 10px #000;
+        }
+        #md-content h1, #md-content h2, #md-content h3 {
+            color: #FFE81F;
+        }
+        #md-content a { color: #FFE81F; }
+        #md-content table {
+            width: 100%;
+            background: #111;
+            color: #fff;
+            border-collapse: collapse;
+            margin-bottom: 1em;
+        }
+        #md-content th, #md-content td {
+            border: 1px solid #FFE81F;
+            padding: 8px;
+            text-align: left;
+        }
+        #md-content th {
+            background: #222;
+            color: #FFE81F;
         }
     </style>
 </head>
@@ -83,35 +112,15 @@
 
         <section id="documentacao" class="mt-5">
             <h2 class="mb-4">Documentação</h2>
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Dicionário de Dados</h5>
-                            <p class="card-text">Estrutura completa do banco de dados do jogo.</p>
-                            <a href="docs/dicionario,md" class="btn btn-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Metodologia</h5>
-                            <p class="card-text">Processos e metodologias utilizadas no desenvolvimento.</p>
-                            <a href="docs/metodologia.md" class="btn btn-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Cronograma</h5>
-                            <p class="card-text">Planejamento e prazos do projeto.</p>
-                            <a href="docs/cronograma.md" class="btn btn-primary">Acessar</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <ul id="lista-md" class="list-unstyled d-flex flex-wrap gap-2">
+                <li><button class="btn btn-primary" data-md="docs/dicionario.md">Dicionário de Dados</button></li>
+                <li><button class="btn btn-primary" data-md="docs/metodologia.md">Metodologia</button></li>
+                <li><button class="btn btn-primary" data-md="docs/cronograma.md">Cronograma</button></li>
+                <li><button class="btn btn-primary" data-md="docs/modelagens/modelo_entidade_relacionamento.md">Modelo Entidade-Relacionamento</button></li>
+                <li><button class="btn btn-primary" data-md="docs/atas/reuniao_30-04-2025.md">Ata: Reunião 30/04/2025</button></li>
+                <li><button class="btn btn-primary" data-md="docs/sprint-00.md">Sprint 00</button></li>
+            </ul>
+            <div id="md-content" class="mt-4"></div>
         </section>
 
         <section id="equipe" class="mt-5">
@@ -168,10 +177,23 @@
 
     <footer class="bg-dark text-center text-white py-3 mt-5">
         <div class="container">
-            <p class="mb-0">© 2024 Star Wars MUD - SBD1</p>
+            <p class="mb-0">© 2025 Star Wars Grupo-11 - SBD1</p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('#lista-md button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const mdFile = this.getAttribute('data-md');
+                fetch(mdFile)
+                    .then(response => response.text())
+                    .then(text => {
+                        document.getElementById('md-content').innerHTML = marked.parse(text);
+                    });
+            });
+        });
+    </script>
 </body>
 </html> 
