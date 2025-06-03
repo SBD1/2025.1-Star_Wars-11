@@ -1,7 +1,7 @@
 CREATE TABLE Npc (
     id_NPC INT PRIMARY KEY,
-    Nome_Planeta VARCHAR(50) NOT NULL,
-    FOREIGN KEY (Nome_Planeta) REFERENCES Planeta(Nome_Planeta) # Assumindo Planeta table exists
+    nome_planeta VARCHAR(50) NOT NULL,
+    FOREIGN KEY (nome_planeta) REFERENCES Planeta(nome_planeta) # Assumindo Planeta table exists
 );
 
 CREATE TABLE Mercante (
