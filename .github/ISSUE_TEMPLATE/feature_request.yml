@@ -1,0 +1,46 @@
+name: 💡 Nova Funcionalidade
+description: Sugerir uma nova ideia para o projeto
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por contribuir com uma nova ideia!
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema Relacionado
+      description: Sua sugestão está relacionada a algum problema?
+      placeholder: Fico frustrado quando...
+    validations:
+      required: false
+
+  - type: textarea
+    id: solucao
+    attributes:
+      label: Solução Proposta
+      description: Descreva a solução que você gostaria
+      placeholder: Deveria funcionar assim...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas Consideradas
+      description: Que outras alternativas você considerou?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: prioridade
+    attributes:
+      label: Prioridade
+      options:
+        - Alta
+        - Média
+        - Baixa
+    validations:
+      required: true

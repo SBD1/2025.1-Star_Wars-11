@@ -1,0 +1,59 @@
+name: 🐛 Bug Report
+description: Criar um relatório de bug para nos ajudar a melhorar
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar um bug!
+  
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição
+      description: Uma descrição clara e concisa do bug
+      placeholder: O bug acontece quando...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducao
+    attributes:
+      label: Passos para Reproduzir
+      description: Como reproduzir o comportamento?
+      placeholder: |
+        1. Vá para '...'
+        2. Clique em '...'
+        3. Role até '...'
+        4. Veja o erro
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamento Esperado
+      description: O que deveria acontecer?
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidências
+      description: Logs, prints ou vídeos que ajudem a entender o problema
+      placeholder: Cole aqui os logs ou arraste imagens
+    validations:
+      required: false
+
+  - type: dropdown
+    id: prioridade
+    attributes:
+      label: Prioridade
+      options:
+        - Alta
+        - Média
+        - Baixa
+    validations:
+      required: true
