@@ -1,0 +1,90 @@
+name: 📋 Issue Padrão
+description: Template padrão para criação de issues
+title: "[Issue]: "
+labels: []
+body:
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: Tipo de Issue
+      description: Selecione o tipo desta issue
+      options:
+        - Bug
+        - Melhoria
+        - Nova funcionalidade
+        - Tarefa
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição
+      description: Descreva claramente o que precisa ser feito ou qual é o problema
+      placeholder: Descreva aqui...
+    validations:
+      required: true
+
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para Reproduzir
+      description: Preencha somente se for um bug
+      placeholder: |
+        1. Vá para '...'
+        2. Clique em '...'
+        3. Role até '...'
+        4. Veja o erro
+    validations:
+      required: false
+
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidências
+      description: Se possível, adicione prints de tela ou logs
+      placeholder: Arraste e solte imagens ou logs aqui
+    validations:
+      required: false
+
+  - type: textarea
+    id: comportamento
+    attributes:
+      label: Comportamento Esperado
+      description: Descreva o que você esperava que acontecesse
+      placeholder: O comportamento esperado é...
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencias
+    attributes:
+      label: Dependências ou Issues Relacionadas
+      description: Se houver outras issues relacionadas, liste-as aqui
+      placeholder: |
+        - Relacionado a: #123
+        - Bloqueado por: #456
+    validations:
+      required: false
+
+  - type: dropdown
+    id: prioridade
+    attributes:
+      label: Prioridade
+      description: Selecione a prioridade desta issue
+      options:
+        - Alta
+        - Média
+        - Baixa
+    validations:
+      required: true
+
+  - type: input
+    id: responsavel
+    attributes:
+      label: Responsável(s)
+      description: Se já souber quem será responsável, mencione com @
+      placeholder: "@username"
+    validations:
+      required: false
