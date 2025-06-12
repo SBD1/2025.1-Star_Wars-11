@@ -17,7 +17,7 @@ def connect_db(max_retries=5):
         except Exception as e:
             print(f"Tentativa {retries + 1} de {max_retries}: {e}")
             retries += 1
-            time.sleep(5)  # Espera 5 segundos antes de tentar novamente
+            time.sleep(5) 
     return None
 
 def test_connection():
@@ -50,5 +50,5 @@ if __name__ == "__main__":
     print("Iniciando aplicação Star Wars MUD...")
     while True:
         test_connection()
-        print("\nServidor rodando... Pressione Ctrl+C para encerrar.")
-        time.sleep(30)  # Verifica a cada 30 segundos
+        print("\nServidor rodando")
+        time.sleep(30) 
