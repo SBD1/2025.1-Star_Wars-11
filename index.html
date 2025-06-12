@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars MUD - SBD1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --star-wars-yellow: #FFE81F;
+            --star-wars-dark: #000000;
+        }
+        body {
+            background-color: var(--star-wars-dark);
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+        }
+        .navbar-brand {
+            color: var(--star-wars-yellow) !important;
+        }
+        .card {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--star-wars-yellow);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-title {
+            color: var(--star-wars-yellow);
+        }
+        .btn-primary {
+            background-color: var(--star-wars-yellow);
+            border-color: var(--star-wars-yellow);
+            color: var(--star-wars-dark);
+        }
+        .btn-primary:hover {
+            background-color: #ffd700;
+            border-color: #ffd700;
+        }
+        #md-content {
+            background: #222;
+            color: #fff;
+            padding: 2em;
+            border-radius: 10px;
+            margin-top: 1em;
+            box-shadow: 0 0 10px #000;
+        }
+        #md-content h1, #md-content h2, #md-content h3 {
+            color: #FFE81F;
+        }
+        #md-content a { color: #FFE81F; }
+        #md-content table {
+            width: 100%;
+            background: #111;
+            color: #fff;
+            border-collapse: collapse;
+            margin-bottom: 1em;
+        }
+        #md-content th, #md-content td {
+            border: 1px solid #FFE81F;
+            padding: 8px;
+            text-align: left;
+        }
+        #md-content th {
+            background: #222;
+            color: #FFE81F;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fab fa-jedi-order"></i> Star Wars MUD
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#sobre">Sobre</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#documentacao">Documentação</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#equipe">Equipe</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <h1 class="display-4 mb-4">Star Wars MUD</h1>
+                <p class="lead">Um jogo baseado em texto ambientado no universo de Star Wars, desenvolvido para a disciplina de SBD1.</p>
+                <a href="#documentacao" class="btn btn-primary btn-lg">Explorar Documentação</a>
+            </div>
+            <div class="col-md-6">
+                <img src="docs/Imagens/StarWarsIcon.png" alt="Logo Star Wars" class="img-fluid">
+            </div>
+        </div>
+
+        <section id="documentacao" class="mt-5">
+            <h2 class="mb-4">Documentação</h2>
+            <ul id="lista-md" class="list-unstyled d-flex flex-wrap gap-2">
+                <li><button class="btn btn-primary" data-md="docs/modelagens/dicionario.md">Dicionário de Dados</button></li>
+                <li><button class="btn btn-primary" data-md="docs/metodologia.md">Metodologia</button></li>
+                <li><button class="btn btn-primary" data-md="docs/cronograma.md">Cronograma</button></li>
+                <li><button class="btn btn-primary" data-md="docs/modelagens/modelo_entidade_relacionamento.md">Modelo Entidade-Relacionamento</button></li>
+                <li><button class="btn btn-primary" data-md="docs/atas/reuniao_30-04-2025.md">Ata: Reunião 30/04/2025</button></li>
+                <li><button class="btn btn-primary" data-md="docs/sprint-00.md">Sprint 00</button></li>
+                <li><button class="btn btn-primary" data-md="docs/modelagens/modelo_relacional.md">Modelo Relacional</button></li>
+                <li><button class="btn btn-primary" data-md="docs/gravacoes/gravacao-video-modulo1.md">Gravação Módulo 1</button></li>
+  
+            </ul>
+            <div id="md-content" class="mt-4"></div>
+        </section>
+
+        <section id="equipe" class="mt-5">
+            <h2 class="mb-4">Nossa Equipe</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/121322804?v=4" class="rounded-circle mb-3" width="100" alt="Artur">
+                            <h5 class="card-title">Artur Mendonça</h5>
+                            <a href="https://github.com/ArtyMend07" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/139409504?v=4" class="rounded-circle mb-3" width="100" alt="Eduardo">
+                            <h5 class="card-title">Eduardo Morais</h5>
+                            <a href="https://github.com/Edumorais08" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/123025849?v=4" class="rounded-circle mb-3" width="100" alt="Filipe">
+                            <h5 class="card-title">Filipe Bressanelli</h5>
+                            <a href="https://github.com/fbressa" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/103958998?v=4" class="rounded-circle mb-3" width="100" alt="Amanda">
+                            <h5 class="card-title">Amanda Abreu</h5>
+                            <a href="https://github.com/Amandaaaaabreu" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/101299192?v=4" class="rounded-circle mb-3" width="100" alt="Renan">
+                            <h5 class="card-title">Renan Pariz</h5>
+                            <a href="https://github.com/renanpariiz" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-dark text-center text-white py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">© 2025 Star Wars Grupo-11 - SBD1</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('#lista-md button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const mdFile = this.getAttribute('data-md');
+                fetch(mdFile)
+                    .then(response => response.text())
+                    .then(text => {
+                        document.getElementById('md-content').innerHTML = marked.parse(text);
+                    });
+            });
+        });
+    </script>
+</body>
+</html> 
