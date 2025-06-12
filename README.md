@@ -23,3 +23,67 @@ Todo o funcionamento do jogo é estruturado em um banco de dados relacional que 
     <td align="center"><a href="https://github.com/renanpariiz"><img src="https://avatars.githubusercontent.com/u/101299192?v=4" width="200px;" alt=""/><br /><sub><b>Renan Pariz</b></sub></a><br />
     </tr>
 </table>
+
+## Como Executar o Projeto
+
+### Pré-requisitos
+
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+- [PgAdmin4](https://www.pgadmin.org/download/) (opcional)
+
+### Passo a Passo
+
+1. **Clone o repositório**
+```bash
+git clone https://github.com/SBD1/2025.1-Star_Wars-11.git
+cd 2025.1-Star_Wars-11
+```
+
+2. **Inicie os containers**
+```bash
+docker-compose up -d
+```
+
+3. **Conecte ao banco via PgAdmin**
+- Host: localhost
+- Port: 5433
+- Database: star_wars_db
+- Username: postgres
+- Password: postgres
+
+### 📝 Documentação Completa
+
+Para instruções detalhadas, consulte nossa [documentação de setup](docs/setup/setup_projeto.md).
+
+## Estrutura do Projeto
+```
+.
+├── src/                          # Código fonte
+│   ├── DDL/                     # Definições das tabelas
+│   │   ├── ddl_sistema.sql     # Sistema estelar
+│   │   ├── ddl_planeta.sql     # Planetas
+│   │   ├── ddl_personagem.sql  # Classes e personagens
+│   │   ├── ddl_npcs.sql       # NPCs do jogo
+│   │   ├── ddl_missao.sql     # Sistema de missões
+│   │   ├── ddl_nave.sql       # Naves espaciais
+│   │   ├── ddl_mobs.sql       # Inimigos
+│   │   └── ddl_inventario_jogador.sql  # Inventário
+│   ├── DML/                     # Inserção de dados
+│   │   ├── dml_personagem.sql
+│   │   ├── dml_nave.sql
+│   │   └── dml_inventario_jogador.sql
+│   └── main.py                 # Aplicação principal
+├── docs/                        # Documentação
+│   ├── atas/                   # Registros de reuniões
+│   ├── backlog/               # Planejamento
+│   ├── gravacoes/            # Links das apresentações
+│   ├── Imagens/              # Recursos visuais
+│   ├── metodologia/          # Processo de desenvolvimento
+│   ├── modelagens/           # MER e Modelo Relacional
+│   └── setup/                # Guias de instalação
+├── .github/                    # Templates GitHub
+├── docker-compose.yml         # Configuração Docker
+├── Dockerfile                # Build da aplicação
+└── requirements.txt          # Dependências Python
+```

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: star_wars_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"  
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/DDL/ddl_sistema.sql:/docker-entrypoint-initdb.d/01_sistema.sql
+      - ./src/DDL/ddl_planeta.sql:/docker-entrypoint-initdb.d/02_planeta.sql
+      - ./src/DDL/ddl_personagem.sql:/docker-entrypoint-initdb.d/03_personagem.sql
+      - ./src/DDL/ddl_npcs.sql:/docker-entrypoint-initdb.d/04_npcs.sql
+      - ./src/DDL/ddl_missao.sql:/docker-entrypoint-initdb.d/05_missao.sql
+      - ./src/DDL/ddl_nave.sql:/docker-entrypoint-initdb.d/06_nave.sql
+      - ./src/DDL/ddl_mobs.sql:/docker-entrypoint-initdb.d/07_mobs.sql
+      - ./src/DDL/ddl_inventario_jogador.sql:/docker-entrypoint-initdb.d/08_inventario.sql
+      - ./src/DML/dml_personagem.sql:/docker-entrypoint-initdb.d/09_dml_personagem.sql
+      - ./src/DML/dml_nave.sql:/docker-entrypoint-initdb.d/10_dml_nave.sql
+      - ./src/DML/dml_inventario_jogador.sql:/docker-entrypoint-initdb.d/11_dml_inventario.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/star_wars_db  
+
+volumes:
+  postgres_data:
