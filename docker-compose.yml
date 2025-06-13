@@ -11,17 +11,22 @@ services:
       - "5433:5432"  
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/DDL/ddl_sistema.sql:/docker-entrypoint-initdb.d/01_sistema.sql
-      - ./src/DDL/ddl_planeta.sql:/docker-entrypoint-initdb.d/02_planeta.sql
-      - ./src/DDL/ddl_personagem.sql:/docker-entrypoint-initdb.d/03_personagem.sql
-      - ./src/DDL/ddl_npcs.sql:/docker-entrypoint-initdb.d/04_npcs.sql
-      - ./src/DDL/ddl_missao.sql:/docker-entrypoint-initdb.d/05_missao.sql
-      - ./src/DDL/ddl_nave.sql:/docker-entrypoint-initdb.d/06_nave.sql
-      - ./src/DDL/ddl_mobs.sql:/docker-entrypoint-initdb.d/07_mobs.sql
-      - ./src/DDL/ddl_inventario_jogador.sql:/docker-entrypoint-initdb.d/08_inventario.sql
-      - ./src/DML/dml_personagem.sql:/docker-entrypoint-initdb.d/09_dml_personagem.sql
-      - ./src/DML/dml_nave.sql:/docker-entrypoint-initdb.d/10_dml_nave.sql
-      - ./src/DML/dml_inventario_jogador.sql:/docker-entrypoint-initdb.d/11_dml_inventario.sql
+      - ./src/DDL/ddl_sistema.sql:/docker-entrypoint-initdb.d/01_ddl_sistema.sql
+      - ./src/DDL/ddl_planeta.sql:/docker-entrypoint-initdb.d/02_ddl_planeta.sql
+      - ./src/DDL/ddl_personagem.sql:/docker-entrypoint-initdb.d/03_ddl_personagem.sql
+      - ./src/DDL/ddl_npcs.sql:/docker-entrypoint-initdb.d/04_ddl_npcs.sql
+      - ./src/DDL/ddl_missao.sql:/docker-entrypoint-initdb.d/05_ddl_missao.sql
+      - ./src/DDL/ddl_nave.sql:/docker-entrypoint-initdb.d/06_ddl_nave.sql
+      - ./src/DDL/ddl_mobs.sql:/docker-entrypoint-initdb.d/07_ddl_mobs.sql
+      - ./src/DDL/ddl_inventario_jogador.sql:/docker-entrypoint-initdb.d/08_ddl_inventario.sql
+      - ./src/DML/dml_sistema_planeta.sql:/docker-entrypoint-initdb.d/09_dml_sistema_planeta.sql
+      - ./src/DML/dml_personagem.sql:/docker-entrypoint-initdb.d/10_dml_personagem.sql
+      - ./src/DML/dml_classes_especializadas.sql:/docker-entrypoint-initdb.d/11_dml_classes_especializadas.sql
+      - ./src/DML/dml_npcs.sql:/docker-entrypoint-initdb.d/12_dml_npcs.sql
+      - ./src/DML/dml_missao.sql:/docker-entrypoint-initdb.d/13_dml_missao.sql
+      - ./src/DML/dml_nave.sql:/docker-entrypoint-initdb.d/14_dml_nave.sql
+      - ./src/DML/dml_mobs.sql:/docker-entrypoint-initdb.d/15_dml_mobs.sql
+      - ./src/DML/dml_inventario_jogador.sql:/docker-entrypoint-initdb.d/16_dml_inventario.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

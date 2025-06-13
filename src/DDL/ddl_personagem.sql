@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS Personagem (
     gcs INT NOT NULL DEFAULT 0,
     nome_classe VARCHAR(22) NOT NULL,
     nome_planeta VARCHAR(20) NOT NULL,
-    FOREIGN KEY (nome_classe) REFERENCES Classe(nome_classe)
-    --FOREIGN KEY (nome_planeta) REFERENCES Planeta(nome_planeta)
+    FOREIGN KEY (nome_classe) REFERENCES Classe(nome_classe),
+    FOREIGN KEY (nome_planeta) REFERENCES Planeta(nome_planeta)
 );
 
 CREATE TABLE IF NOT EXISTS Jedi (
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS Cacador_de_Recompensas (
 );
 
 SELECT * FROM Classe;
-SELECT * FROM Personagem 
+SELECT * FROM Personagem
 
 
 
