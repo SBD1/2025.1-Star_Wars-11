@@ -9,15 +9,15 @@ def conectar_bd(max_tentativas=5):
                 database="star_wars_db",
                 user="postgres",
                 password="postgres",
-                host="db",
-                port="5432"
+                host="localhost",
+                port="5433"
             )
             print("Conexão com o banco de dados estabelecida!")
             return conexao
         except Exception as e:
             print(f"Tentativa {tentativas + 1} de {max_tentativas}: {e}")
             tentativas += 1
-            time.sleep(5) 
+            time.sleep(2) 
     return None
 
 def testar_conexao():
