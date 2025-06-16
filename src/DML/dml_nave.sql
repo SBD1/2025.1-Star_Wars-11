@@ -1,8 +1,8 @@
 INSERT INTO Nave (modelo, Id_Player, velocidade, capacidade) 
 VALUES
-('X-WING-001', 1, 170, 1),
-('YT-1300-001', 2, 145, 5),
-('LAMBDA-001', 3, 100, 20),
+('X-WING-001', NULL, 170, 1),
+('YT-1300-001', NULL, 145, 5),
+('LAMBDA-001', NULL, 100, 20),
 ('FREGATA-001', NULL, 50, 40);
 
 INSERT INTO X_WING_T65 (modelo)

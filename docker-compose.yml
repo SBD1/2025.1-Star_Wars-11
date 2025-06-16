@@ -18,15 +18,16 @@ services:
       - ./src/DDL/ddl_missao.sql:/docker-entrypoint-initdb.d/05_ddl_missao.sql
       - ./src/DDL/ddl_nave.sql:/docker-entrypoint-initdb.d/06_ddl_nave.sql
       - ./src/DDL/ddl_mobs.sql:/docker-entrypoint-initdb.d/07_ddl_mobs.sql
-      - ./src/DDL/ddl_inventario_jogador.sql:/docker-entrypoint-initdb.d/08_ddl_inventario.sql
-      - ./src/DML/dml_sistema_planeta.sql:/docker-entrypoint-initdb.d/09_dml_sistema_planeta.sql
-      - ./src/DML/dml_personagem.sql:/docker-entrypoint-initdb.d/10_dml_personagem.sql
-      - ./src/DML/dml_classes_especializadas.sql:/docker-entrypoint-initdb.d/11_dml_classes_especializadas.sql
-      - ./src/DML/dml_npcs.sql:/docker-entrypoint-initdb.d/12_dml_npcs.sql
-      - ./src/DML/dml_missao.sql:/docker-entrypoint-initdb.d/13_dml_missao.sql
-      - ./src/DML/dml_nave.sql:/docker-entrypoint-initdb.d/14_dml_nave.sql
-      - ./src/DML/dml_mobs.sql:/docker-entrypoint-initdb.d/15_dml_mobs.sql
-      - ./src/DML/dml_inventario_jogador.sql:/docker-entrypoint-initdb.d/16_dml_inventario.sql
+      - ./src/DDL/ddl_triggers.sql:/docker-entrypoint-initdb.d/08_ddl_triggers.sql
+      - ./src/DDL/ddl_inventario_jogador.sql:/docker-entrypoint-initdb.d/09_ddl_inventario.sql
+      - ./src/DML/dml_sistema_planeta.sql:/docker-entrypoint-initdb.d/10_dml_sistema_planeta.sql
+      - ./src/DML/dml_personagem.sql:/docker-entrypoint-initdb.d/11_dml_personagem.sql
+      - ./src/DML/dml_classes_especializadas.sql:/docker-entrypoint-initdb.d/12_dml_classes_especializadas.sql
+      - ./src/DML/dml_npcs.sql:/docker-entrypoint-initdb.d/13_dml_npcs.sql
+      - ./src/DML/dml_missao.sql:/docker-entrypoint-initdb.d/14_dml_missao.sql
+      - ./src/DML/dml_nave.sql:/docker-entrypoint-initdb.d/15_dml_nave.sql
+      - ./src/DML/dml_mobs.sql:/docker-entrypoint-initdb.d/16_dml_mobs.sql
+      - ./src/DML/dml_inventario_jogador.sql:/docker-entrypoint-initdb.d/17_dml_inventario.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
