@@ -9,8 +9,8 @@ def conectar_bd(max_tentativas=5):
                 database="star_wars_db",
                 user="postgres",
                 password="postgres",
-                host="localhost",
-                port="5433"
+                host="db",
+                port="5432"
             )
             print("Conexão com o banco de dados estabelecida!")
             return conexao

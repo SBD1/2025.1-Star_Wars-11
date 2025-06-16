@@ -1,4 +1,4 @@
 psycopg2-binary==2.9.10
 python-dotenv==1.0.0
 python-decouple==3.8
-
+alembic == 1.12.0
