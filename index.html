@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars MUD - SBD1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --star-wars-yellow: #FFE81F;
+            --star-wars-dark: #000000;
+        }
+        body {
+            background-color: var(--star-wars-dark);
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+        }
+        .navbar-brand {
+            color: var(--star-wars-yellow) !important;
+        }
+        .card {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--star-wars-yellow);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-title {
+            color: var(--star-wars-yellow);
+        }
+        .btn-primary {
+            background-color: var(--star-wars-yellow);
+            border-color: var(--star-wars-yellow);
+            color: var(--star-wars-dark);
+        }
+        .btn-primary:hover {
+            background-color: #ffd700;
+            border-color: #ffd700;
+        }
+        #md-content {
+            background: #222;
+            color: #fff;
+            padding: 2em;
+            border-radius: 10px;
+            margin-top: 1em;
+            box-shadow: 0 0 10px #000;
+        }
+        #md-content h1, #md-content h2, #md-content h3 {
+            color: #FFE81F;
+        }
+        #md-content a { color: #FFE81F; }
+        #md-content table {
+            width: 100%;
+            background: #111;
+            color: #fff;
+            border-collapse: collapse;
+            margin-bottom: 1em;
+        }
+        #md-content th, #md-content td {
+            border: 1px solid #FFE81F;
+            padding: 8px;
+            text-align: left;
+        }
+        #md-content th {
+            background: #222;
+            color: #FFE81F;
+        }
+        #md-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .btn-outline-warning {
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+        .btn-outline-warning:hover {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .text-warning {
+            color: #FFE81F !important;
+        }
+        .btn.active {
+            background-color: #ffd700 !important;
+            border-color: #ffd700 !important;
+            color: #000 !important;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-color: #ffc107;
+            color: #fff;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        #md-content {
+            transition: all 0.3s ease-in-out;
+        }
+        #md-content.loading {
+            opacity: 0.5;
+            transform: translateY(10px);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fab fa-jedi-order"></i> Star Wars MUD
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#sobre">Sobre</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#documentacao">Documentação</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#equipe">Equipe</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <h1 class="display-4 mb-4">Star Wars MUD</h1>
+                <p class="lead">Um jogo baseado em texto ambientado no universo de Star Wars, desenvolvido para a disciplina de SBD1.</p>
+                <a href="#documentacao" class="btn btn-primary btn-lg">Explorar Documentação</a>
+            </div>
+            <div class="col-md-6">
+                <img src="docs/Imagens/StarWarsIcon.png" alt="Logo Star Wars" class="img-fluid">
+            </div>
+        </div>
+
+        <section id="documentacao" class="mt-5">
+            <h2 class="mb-4">Documentação</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="text-warning">📊 Modelagem de Dados</h4>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/modelagens/modelo_entidade_relacionamento.md">Modelo Entidade-Relacionamento</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/modelagens/modelo_relacional.md">Modelo Relacional</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/modelagens/dicionario.md">Dicionário de Dados</button></li>
+                    </ul>
+
+                    <h4 class="text-warning">🎮 Documentação do Jogo</h4>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/jogo/manual_usuario.md">Manual do Usuário</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/jogo/regras_negocio.md">Regras de Negócio</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/jogo/comandos_disponiveis.md">Comandos Disponíveis</button></li>
+                    </ul>
+
+                    <h4 class="text-warning">🔧 Setup e Configuração</h4>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/setup/setup_projeto.md">Setup do Projeto</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/setup/dificuldades_tecnicas.md">Dificuldades Técnicas</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/setup/troubleshooting.md">Troubleshooting</button></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-6">
+                    <h4 class="text-warning">📋 Metodologia e Planejamento</h4>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/metodologia/metodologia.md">Metodologia</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/metodologia/cronograma.md">Cronograma</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/backlog/backlog_star_wars_mud_ordenado.md">Backlog do Projeto</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/metodologia/sprint-00.md">Sprint 00</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/metodologia/sprint-01.md">Sprint 01</button></li>
+                    </ul>
+
+                    <h4 class="text-warning">🏗️ Implementação</h4>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/implementacao/arquitetura_sistema.md">Arquitetura do Sistema</button></li>
+                    </ul>
+
+                    <h4 class="text-warning">📝 Reuniões e Entregas</h4>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/atas/reuniao_30-04-2025.md">Ata: Reunião 30/04/2025</button></li>
+                        <li class="mb-2"><button class="btn btn-primary btn-sm" data-md="docs/gravacoes/gravacao-video-modulo1.md">Gravação Módulo 1</button></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="md-content" class="mt-4"></div>
+        </section>
+
+        <section id="equipe" class="mt-5">
+            <h2 class="mb-4">Nossa Equipe</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/121322804?v=4" class="rounded-circle mb-3" width="100" alt="Artur">
+                            <h5 class="card-title">Artur Mendonça</h5>
+                            <a href="https://github.com/ArtyMend07" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/139409504?v=4" class="rounded-circle mb-3" width="100" alt="Eduardo">
+                            <h5 class="card-title">Eduardo Morais</h5>
+                            <a href="https://github.com/Edumorais08" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/123025849?v=4" class="rounded-circle mb-3" width="100" alt="Filipe">
+                            <h5 class="card-title">Filipe Bressanelli</h5>
+                            <a href="https://github.com/fbressa" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/103958998?v=4" class="rounded-circle mb-3" width="100" alt="Amanda">
+                            <h5 class="card-title">Amanda Abreu</h5>
+                            <a href="https://github.com/Amandaaaaabreu" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <img src="https://avatars.githubusercontent.com/u/101299192?v=4" class="rounded-circle mb-3" width="100" alt="Renan">
+                            <h5 class="card-title">Renan Pariz</h5>
+                            <a href="https://github.com/renanpariiz" class="btn btn-primary">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-dark text-center text-white py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">© 2025 Star Wars Grupo-11 - SBD1</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('button[data-md]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const mdFile = this.getAttribute('data-md');
+                const contentDiv = document.getElementById('md-content');
+
+                // Destacar botão ativo
+                document.querySelectorAll('button[data-md]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Adicionar efeito de loading
+                contentDiv.classList.add('loading');
+                contentDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-warning"></i><p class="mt-2">Carregando...</p></div>';
+
+                // Scroll suave para o conteúdo
+                contentDiv.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+
+                //carrega conteúdo com delay de loading
+                setTimeout(() => {
+                    fetch(mdFile)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Arquivo não encontrado: ${mdFile}`);
+                            }
+                            return response.text();
+                        })
+                        .then(text => {
+                            contentDiv.classList.remove('loading');
+                            contentDiv.innerHTML = marked.parse(text);
+
+                            //Corrige caminho das imagens
+                            const images = contentDiv.querySelectorAll('img');
+                            images.forEach(img => {
+                                const src = img.getAttribute('src');
+                                if (src && src.startsWith('../Imagens/')) {
+                                    img.setAttribute('src', src.replace('../Imagens/', 'docs/Imagens/'));
+                                }
+                            });
+                        })
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
