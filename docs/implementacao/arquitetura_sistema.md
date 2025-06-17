@@ -239,3 +239,9 @@ alembic upgrade head
 - **Documentação**: ✅
 - **Testes**: 🔄 Em desenvolvimento
 - **Versionamento**: ✅
+
+## Histórico de Versões
+
+| Versão | Data       | Modificações                      | Autor(es)     | Revisor(es) |
+|--------|------------|-----------------------------------|---------------|-------------|
+| 1.0    | 16/06/2025 | Criação do documento de arquitetura          | [Artur Mendonça](https://github.com/ArtyMend07) | [Amanda Abreu](https://github.com/Amandaaaaabreu) e [Eduardo Morais](https://github.com/Edumorais08) |
