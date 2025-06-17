@@ -184,4 +184,8 @@ ORDER BY mc.total_conclusoes DESC;
 - **Transações**: Atômicas para integridade de dados
 - **Escalabilidade**: Suporta milhares de missões simultâneas
 
-O sistema está 100% funcional e prático, seguindo as melhores práticas de desenvolvimento de jogos e banco de dados!
+## Histórico de Versões
+
+| Versão | Data       | Modificações                      | Autor(es)     | Revisor(es) |
+|--------|------------|-----------------------------------|---------------|-------------|
+| 1.0    | 16/06/2025 | Criação do documento de sistema de missões          | [Artur Mendonça](https://github.com/ArtyMend07) | [Amanda Abreu](https://github.com/Amandaaaaabreu) e [Eduardo Morais](https://github.com/Edumorais08) |

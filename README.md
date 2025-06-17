@@ -60,7 +60,7 @@ Para instruções detalhadas, consulte nossa [documentação de setup](docs/setu
 ```
 .
 ├── src/                          # Código fonte
-│   ├── DDL/                     # Definições das tabelas
+│   ├── DDL/                     # Data Definition Language - Estruturas do BD
 │   │   ├── ddl_sistema.sql     # Sistema estelar
 │   │   ├── ddl_planeta.sql     # Planetas
 │   │   ├── ddl_personagem.sql  # Classes e personagens
@@ -68,27 +68,72 @@ Para instruções detalhadas, consulte nossa [documentação de setup](docs/setu
 │   │   ├── ddl_missao.sql     # Sistema de missões
 │   │   ├── ddl_nave.sql       # Naves espaciais
 │   │   ├── ddl_mobs.sql       # Inimigos
-│   │   └── ddl_inventario_jogador.sql  # Inventário
-│   ├── DML/                     # Inserção de dados
+│   │   ├── ddl_inventario_jogador.sql  # Inventário
+│   │   ├── ddl_funcoes_missoes.sql     # Funções de missões
+│   │   └── ddl_triggers.sql            # Triggers automáticos
+│   ├── DML/                     # Data Manipulation Language - Dados iniciais
 │   │   ├── dml_personagem.sql
 │   │   ├── dml_nave.sql
-│   │   └── dml_inventario_jogador.sql
-│   │   └── dml_classes_especializadas.sql
-│   │   └── dml_missao.sql
-│   │   └── dml_mobs.sql
-│   │   └── dml_npcs.sql
+│   │   ├── dml_inventario_jogador.sql
+│   │   ├── dml_classes_especializadas.sql
+│   │   ├── dml_missao.sql
+│   │   ├── dml_mobs.sql
+│   │   ├── dml_npcs.sql
 │   │   └── dml_sistema_planeta.sql
-│   └── main.py                 # Aplicação principal
-├── docs/                        # Documentação
+│   ├── DQL/                     # Data Query Language - Consultas
+│   │   ├── dql_personagem_classe_planeta.sql
+│   │   ├── dql_planeta.sql
+│   │   ├── dql_sistema.sql
+│   │   ├── dql_nave.sql
+│   │   ├── dql_missao.sql
+│   │   ├── dql_npc.sql
+│   │   └── dql_inventario.sql
+│   ├── MUD/                     # Aplicação do jogo
+│   │   └── jogo_starwars.py    # Lógica principal do MUD
+│   ├── migracoes/              # Sistema de migrações
+│   │   ├── alembic/           # Configurações Alembic
+│   │   └── alembic.ini        # Arquivo de configuração
+│   └── main.py                 # Ponto de entrada da aplicação
+├── docs/                        # Documentação completa
+│   ├── modulo_1.md            # Documentação do Módulo 1 - Modelagem
+│   ├── modulo_2.md            # Documentação do Módulo 2 - SQL
 │   ├── atas/                   # Registros de reuniões
-│   ├── backlog/               # Planejamento
+│   ├── backlog/               # Planejamento e backlog
 │   ├── gravacoes/            # Links das apresentações
 │   ├── Imagens/              # Recursos visuais
+│   ├── implementacao/        # Documentação técnica
+│   ├── jogo/                 # Documentação do jogo
 │   ├── metodologia/          # Processo de desenvolvimento
-│   ├── modelagens/           # MER e Modelo Relacional
-│   └── setup/                # Guias de instalação
-├── .github/                    # Templates GitHub
+│   ├── modelagens/           # MER, Modelo Relacional e Dicionário
+│   └── setup/                # Guias de instalação e configuração
+├── index.html                  # GitHub Pages - Interface web
 ├── docker-compose.yml         # Configuração Docker
 ├── Dockerfile                # Build da aplicação
 └── requirements.txt          # Dependências Python
 ```
+
+## Módulos do Projeto
+
+### 📚 Módulo 1 - Modelagem de Dados
+Abrange toda a fase de modelagem conceitual e lógica do banco de dados:
+- **Modelo Entidade-Relacionamento (MER)**: Estrutura conceitual
+- **Modelo Relacional**: Conversão para estrutura relacional
+- **Dicionário de Dados**: Documentação completa das estruturas
+
+### 📚 Módulo 2 - Implementação e Desenvolvimento
+Implementação física do banco e desenvolvimento do jogo:
+- **DDL**: Criação das estruturas físicas do banco
+- **DML**: Inserção de dados iniciais do universo Star Wars
+- **DQL**: Consultas otimizadas para o jogo
+- **Migrações**: Controle de versão do banco de dados
+- **Jogo MUD**: Aplicação inicial com interface de texto
+
+## 🌐 Documentação Online
+
+Acesse nossa documentação completa em: [Star Wars MUD - Documentação](https://sbd1.github.io/2025.1-Star_Wars-11/)
+
+## Histórico de Versões
+
+| Versão | Data       | Modificações                      | Autor(es)     | Revisor(es) |
+|--------|------------|-----------------------------------|---------------|-------------|
+| 1.0    | 16/06/2025 | Estruturação completa da README         | [Artur Mendonça](https://github.com/ArtyMend07) | [Amanda Abreu](https://github.com/Amandaaaaabreu) |
