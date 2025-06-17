@@ -73,11 +73,11 @@ Para instruções detalhadas, consulte nossa [documentação de setup](docs/setu
 │   │   ├── dml_personagem.sql
 │   │   ├── dml_nave.sql
 │   │   └── dml_inventario_jogador.sql
-        └── dml_classes_especializadas.sql
-        └── dml_missao.sql
-        └── dml_mobs.sql
-        └── dml_npcs.sql
-        └── dml_sistema_planeta.sql
+│   │   └── dml_classes_especializadas.sql
+│   │   └── dml_missao.sql
+│   │   └── dml_mobs.sql
+│   │   └── dml_npcs.sql
+│   │   └── dml_sistema_planeta.sql
 │   └── main.py                 # Aplicação principal
 ├── docs/                        # Documentação
 │   ├── atas/                   # Registros de reuniões
