@@ -1,0 +1,189 @@
+-- ÁLGEBRA RELACIONAL - STAR WARS MUD
+-- Versões em álgebra relacional das consultas SQL existentes
+
+-- ========================================
+-- 1. CONSULTA DE PERSONAGEM COM CLASSE
+-- ========================================
+-- SQL Original: dql_personagem_classe_planeta.sql
+-- SELECT p.id_player, p.vida_base, p.level, p.dano_base, p.xp, p.gcs, p.nome_classe, p.nome_planeta, c.Determinacao
+-- FROM Personagem p LEFT JOIN Classe c ON p.nome_classe = c.nome_classe;
+
+-- Álgebra Relacional:
+π id_player, vida_base, level, dano_base, xp, gcs, nome_classe, nome_planeta, Determinacao (
+    Personagem ⟕ nome_classe=nome_classe Classe
+)
+
+-- ========================================
+-- 2. CONSULTA DE PLANETAS COM TIPOS
+-- ========================================
+-- SQL Original: dql_planeta.sql
+-- SELECT p.nome_planeta, p.habitavel, p.clima, p.id_sistema, [CASE para tipo_planeta]
+-- FROM Planeta p LEFT JOIN [múltiplos tipos de planeta]
+
+-- Álgebra Relacional:
+π nome_planeta, habitavel, clima, id_sistema, tipo_planeta (
+    (((Planeta ⟕ nome_planeta=nome_planeta Planeta_Desertico)
+      ⟕ nome_planeta=nome_planeta Planeta_Temperado)
+     ⟕ nome_planeta=nome_planeta Planeta_Tropical)
+    ⟕ nome_planeta=nome_planeta Planeta_Gelado
+)
+
+-- ========================================
+-- 3. CONSULTA DE INVENTÁRIO
+-- ========================================
+-- SQL Original: dql_inventario.sql
+-- SELECT ii.Id_PlayerIn, i.nome, i.peso, ii.quantidade, (i.peso * ii.quantidade) AS peso_total_item, [CASE para tipo]
+-- FROM Inventario_Item ii LEFT JOIN Item i ON ii.id_item = i.id_item
+
+-- Álgebra Relacional:
+π Id_PlayerIn, nome, peso, quantidade, peso_total_item, descricao_tipo (
+    ρ peso_total_item ← peso * quantidade (
+        Inventario_Item ⟕ id_item=id_item Item
+    )
+)
+
+-- ========================================
+-- 4. CONSULTA BÁSICA DE MISSÕES
+-- ========================================
+-- SQL Original: dql_missao.sql (versão simplificada)
+-- SELECT m.id_missao, m.nome_missao, m.descricao, m.valor_recompensa, m.xp_recompensa, m.status, m.nome_planeta
+-- FROM Missao m
+
+-- Álgebra Relacional:
+π id_missao, nome_missao, descricao, valor_recompensa, xp_recompensa, status, nome_planeta (Missao)
+
+-- ========================================
+-- 5. MISSÕES POR PLANETA (AGREGAÇÃO)
+-- ========================================
+-- SQL Original: Estatísticas de missões por planeta
+-- SELECT nome_planeta, COUNT(*) as total_missoes, AVG(valor_recompensa) as recompensa_media
+-- FROM Missao GROUP BY nome_planeta
+
+-- Álgebra Relacional:
+γ nome_planeta; COUNT(*) → total_missoes, AVG(valor_recompensa) → recompensa_media (Missao)
+
+-- ========================================
+-- 6. CONSULTA DE NAVES
+-- ========================================
+-- SQL Original: dql_nave.sql (assumindo estrutura básica)
+-- SELECT n.id_nave, n.nome_nave, n.capacidade, n.id_player
+-- FROM Nave n
+
+-- Álgebra Relacional:
+π id_nave, nome_nave, capacidade, id_player (Nave)
+
+-- ========================================
+-- 7. CONSULTA DE NPCs
+-- ========================================
+-- SQL Original: dql_npc.sql (assumindo estrutura básica)
+-- SELECT n.id_NPC, n.nome, n.nome_planeta
+-- FROM NPC n
+
+-- Álgebra Relacional:
+π id_NPC, nome, nome_planeta (NPC)
+
+-- ========================================
+-- 8. CONSULTA DE SISTEMA
+-- ========================================
+-- SQL Original: dql_sistema.sql (assumindo estrutura básica)
+-- SELECT s.id_sistema, s.nome_sistema
+-- FROM Sistema s
+
+-- Álgebra Relacional:
+π id_sistema, nome_sistema (Sistema)
+
+-- ========================================
+-- 9. PERSONAGENS EM PLANETA ESPECÍFICO
+-- ========================================
+-- Consulta adicional: Personagens em um planeta específico
+-- SELECT * FROM Personagem WHERE nome_planeta = 'Tatooine'
+
+-- Álgebra Relacional:
+σ nome_planeta = 'Tatooine' (Personagem)
+
+-- ========================================
+-- 10. MISSÕES DISPONÍVEIS PARA LEVEL
+-- ========================================
+-- Consulta adicional: Missões disponíveis para um level específico
+-- SELECT * FROM Missao WHERE level_minimo <= 5 AND status = 'Disponível'
+
+-- Álgebra Relacional:
+σ level_minimo ≤ 5 ∧ status = 'Disponível' (Missao)
+
+-- ========================================
+-- 11. ITENS POR TIPO
+-- ========================================
+-- Consulta adicional: Itens de um tipo específico
+-- SELECT * FROM Item WHERE tipo = 'arma'
+
+-- Álgebra Relacional:
+σ tipo = 'arma' (Item)
+
+-- ========================================
+-- 12. PERSONAGENS COM NAVES
+-- ========================================
+-- Consulta adicional: Personagens que possuem naves
+-- SELECT p.id_player, p.nome_classe, n.nome_nave
+-- FROM Personagem p INNER JOIN Nave n ON p.id_player = n.id_player
+
+-- Álgebra Relacional:
+π id_player, nome_classe, nome_nave (
+    Personagem ⋈ id_player=id_player Nave
+)
+
+-- ========================================
+-- 13. PLANETAS HABITÁVEIS
+-- ========================================
+-- Consulta adicional: Planetas habitáveis
+-- SELECT * FROM Planeta WHERE habitavel = true
+
+-- Álgebra Relacional:
+σ habitavel = true (Planeta)
+
+-- ========================================
+-- 14. MISSÕES COM NPCs
+-- ========================================
+-- Consulta adicional: Missões com informações do NPC
+-- SELECT m.nome_missao, m.valor_recompensa, n.nome
+-- FROM Missao m INNER JOIN NPC n ON m.id_NPC = n.id_NPC
+
+-- Álgebra Relacional:
+π nome_missao, valor_recompensa, nome (
+    Missao ⋈ id_NPC=id_NPC NPC
+)
+
+-- ========================================
+-- 15. INVENTÁRIO COM PESO TOTAL POR JOGADOR
+-- ========================================
+-- Consulta adicional: Peso total do inventário por jogador
+-- SELECT Id_PlayerIn, SUM(peso * quantidade) as peso_total
+-- FROM Inventario_Item ii JOIN Item i ON ii.id_item = i.id_item
+-- GROUP BY Id_PlayerIn
+
+-- Álgebra Relacional:
+γ Id_PlayerIn; SUM(peso * quantidade) → peso_total (
+    Inventario_Item ⋈ id_item=id_item Item
+)
+
+-- ========================================
+-- LEGENDA DOS SÍMBOLOS:
+-- ========================================
+-- π - Projeção (SELECT)
+-- σ - Seleção (WHERE)
+-- ⋈ - Junção natural (INNER JOIN)
+-- ⟕ - Junção externa esquerda (LEFT JOIN)
+-- ⟖ - Junção externa direita (RIGHT JOIN)
+-- ⟗ - Junção externa completa (FULL OUTER JOIN)
+-- ∪ - União (UNION)
+-- ∩ - Interseção (INTERSECT)
+-- - - Diferença (EXCEPT)
+-- × - Produto cartesiano
+-- ρ - Renomeação
+-- γ - Agrupamento (GROUP BY)
+-- ∧ - E lógico (AND)
+-- ∨ - Ou lógico (OR)
+-- ¬ - Negação (NOT)
+-- ≤ - Menor ou igual
+-- ≥ - Maior ou igual
+-- = - Igual
+-- ≠ - Diferente
