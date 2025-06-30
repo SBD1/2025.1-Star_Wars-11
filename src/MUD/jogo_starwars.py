@@ -1,3 +1,6 @@
+from utils import mostrar_menu
+from loja import Loja
+
 class JogoStarWars:
     def __init__(self, conexao):
         self.conexao = conexao
@@ -97,6 +100,7 @@ class JogoStarWars:
             print("status - Ver status do personagem")
             print("viajar - Viajar para outro planeta")
             print("missoes - Sistema de missões")
+            print("loja   - Acessar loja")
             print("sair - Sair do jogo")
 
             comando = input("\n> ").lower().strip()
@@ -110,6 +114,8 @@ class JogoStarWars:
                 self.menu_viagem()
             elif comando == "missoes":
                 self.menu_missoes()
+            elif comando == "loja":
+                self.menu_loja()
             else:
                 print("Comando não reconhecido!")
 
@@ -306,6 +312,29 @@ class JogoStarWars:
                 break
             else:
                 print("Opção inválida!")
+    
+    def menu_loja(self):
+        loja = Loja(self.conexao)
+        produtos = loja.listar_produtos()
+
+        if not produtos:
+            print("\nNenhum produto disponível na loja.")
+            return
+
+        print("\n=== Loja ===")
+        # monta opções numeradas
+        opcoes = [f"{p.id}: {p.nome} — {p.preco} GCS" for p in produtos] + ["Voltar"]
+        escolha = mostrar_menu(opcoes)
+
+        # se for um produto válido
+        if 1 <= escolha <= len(produtos):
+            prod = produtos[escolha - 1]
+            sucesso = loja.comprar(self.jogador_atual, prod.id)
+            if sucesso:
+                print(f"Você comprou 1x {prod.nome}!")
+            else:
+                print("Não foi possível concluir a compra.")
+        # opção “Voltar” retorna silenciosamente
 
     def listar_missoes_disponiveis(self):
         """Lista missões disponíveis para o jogador atual"""
