@@ -280,6 +280,8 @@ class JogoStarWars:
         cursor.close()
 
     def menu_missoes(self):
+
+        self.verificar_missoes()
         """Menu principal de missões"""
         while True:
             print("\n=== Sistema de Missões ===")
@@ -550,3 +552,51 @@ class JogoStarWars:
             self.conexao.rollback()
         finally:
             cursor.close()
+
+    def verificar_missoes(self):
+        """
+        Varre missões 'Em Andamento' e conclui automaticamente as que já cumpriram seus critérios.
+        """
+        cur = self.conexao.cursor()
+        cur.execute("""
+            SELECT mj.id_missao, m.tipo_missao, m.valor_recompensa, m.xp_recompensa
+            FROM Missao_Jogador mj
+            JOIN Missao m ON mj.id_missao = m.id_missao
+            WHERE mj.id_player = %s AND mj.status_jogador = 'Em Andamento'
+        """, (self.jogador_atual,))
+        pendentes = cur.fetchall()
+
+        for id_missao, tipo, gcs, xp in pendentes:
+            concluida = False
+
+            # Exemplo de critério para missão do tipo 'Visita'
+            if tipo == 'Visita':
+                cur.execute("""
+                    SELECT 1
+                      FROM Personagem p
+                      JOIN Missao m ON m.id_missao = %s
+                     WHERE p.id_player = %s
+                       AND p.nome_planeta = m.nome_planeta
+                """, (id_missao, self.jogador_atual))
+                concluida = cur.fetchone() is not None
+
+            # (adicione aqui outros 'elif tipo == ...' conforme sua lógica)
+
+            if concluida:
+                # marca como concluída
+                cur.execute("""
+                    UPDATE Missao_Jogador
+                       SET status_jogador = 'Concluída'
+                     WHERE id_player = %s AND id_missao = %s
+                """, (self.jogador_atual, id_missao))
+                # concede recompensas
+                cur.execute("""
+                    UPDATE Personagem
+                       SET gcs = gcs + %s,
+                           xp  = xp  + %s
+                     WHERE id_player = %s
+                """, (gcs, xp, self.jogador_atual))
+                print(f"Missão {id_missao} concluída automaticamente! +{gcs} GCS, +{xp} XP")
+
+        self.conexao.commit()
+        cur.close()
