@@ -11,6 +11,22 @@ class JogoStarWars:
             else:
                 self.loop_jogo()
 
+    def _selecionar_opcao_por_numero(self, titulo, opcoes, prompt):
+        print(f"\n{titulo}")
+        for i, opcao in enumerate(opcoes, 1):
+            print(f"{i}. {opcao[0]}")
+
+        while True: 
+            try:
+                escolha_num = int(input(f"\n{prompt}"))
+                
+                if 1 <= escolha_num <= len(opcoes):
+                    return opcoes[escolha_num - 1][0]
+                else:
+                    print("Opção inválida. Por favor, escolha um número da lista.")
+            except ValueError:
+                print("Entrada inválida. Por favor, digite apenas o número.")
+
     def mostrar_menu(self):
         print("\n1. Criar personagem")
         print("2. Carregar personagem")
@@ -28,34 +44,38 @@ class JogoStarWars:
         elif escolha == "4":
             exit()
 
+
     def criar_personagem(self):
         cursor = self.conexao.cursor()
         print("\n=== Criação de Personagem ===")
         
         cursor.execute("SELECT nome_classe FROM Classe")
         classes = cursor.fetchall()
-        print("\nClasses disponíveis:")
-        for classe in classes:
-            print(f"- {classe[0]}")
-
+        
         cursor.execute("SELECT nome_planeta FROM Planeta")
         planetas = cursor.fetchall()
-        print("\nPlanetas disponíveis:")
-        for planeta in planetas:
-            print(f"- {planeta[0]}")
 
-        classe = input("\nEscolha sua classe: ")
-        planeta = input("Escolha seu planeta inicial: ")
+        classe_escolhida = self._selecionar_opcao_por_numero(
+            "Classes disponíveis:", 
+            classes, 
+            "Escolha o número da sua classe: "
+        )
+
+        planeta_escolhido = self._selecionar_opcao_por_numero(
+            "Planetas disponíveis:", 
+            planetas, 
+            "Escolha o número do seu planeta inicial: "
+        )
 
         try:
             cursor.execute("""
                 INSERT INTO Personagem (vida_base, level, dano_base, xp, gcs, nome_classe, nome_planeta) 
                 VALUES (100, 1, 10, 0, 1000, %s, %s) RETURNING id_player
-            """, (classe, planeta))
+            """, (classe_escolhida, planeta_escolhido))
             
             self.jogador_atual = cursor.fetchone()[0]
             self.conexao.commit()
-            print(f"\nPersonagem criado com sucesso! ID: {self.jogador_atual}")
+            print(f"\nPersonagem '{classe_escolhida}' criado em '{planeta_escolhido}' com sucesso! ID: {self.jogador_atual}")
             
         except Exception as erro:
             print(f"Erro ao criar personagem: {erro}")
@@ -63,7 +83,16 @@ class JogoStarWars:
 
         cursor.close()
 
+
     def carregar_personagem(self):
+        cursor = self.conexao.cursor()
+        cursor.execute("SELECT id_player, nome_classe, nome_planeta FROM Personagem")
+        personagens = cursor.fetchall()
+        print("\n=== Carregar Personagem ===\n")
+
+        for personagem in personagens:
+            print(f"ID: {personagem[0]}, Classe: {personagem[1]}, Planeta: {personagem[2]}")
+
         id_jogador = input("\nDigite o ID do seu personagem: ")
         cursor = self.conexao.cursor()
         
@@ -94,21 +123,22 @@ class JogoStarWars:
     def loop_jogo(self):
         while True:
             print("\n=== Comandos ===")
-            print("status - Ver status do personagem")
-            print("viajar - Viajar para outro planeta")
-            print("missoes - Sistema de missões")
-            print("sair - Sair do jogo")
-
+            print("1. status - Ver status do personagem")
+            print("2. viajar - Viajar para outro planeta")
+            print("3. missoes - Ver missões disponíveis")
+            print("4. sair - Sair do jogo")
+            
             comando = input("\n> ").lower().strip()
-
-            if comando == "sair":
+            
+            if comando == "4":
                 self.jogador_atual = None
+                print("\nSessão encerrada. Voltando para o menu principal...")
                 break
-            elif comando == "status":
+            elif comando == "1":
                 self.mostrar_status()
-            elif comando == "viajar":
+            elif comando == "2":
                 self.menu_viagem()
-            elif comando == "missoes":
+            elif comando == "3":
                 self.menu_missoes()
             else:
                 print("Comando não reconhecido!")
@@ -131,6 +161,15 @@ class JogoStarWars:
         cursor.close()
 
     def deletar_personagem(self):
+        cursor = self.conexao.cursor()
+        cursor.execute("SELECT id_player, nome_classe, nome_planeta FROM Personagem")
+        personagens = cursor.fetchall()
+        print("\n=== Deletar Personagem ===\n")
+        
+        for personagem in personagens:
+            print(f"ID: {personagem[0]}, Classe: {personagem[1]}, Planeta: {personagem[2]}")
+
+
         id_jogador = input("\nDigite o ID do personagem que deseja deletar: ")
         cursor = self.conexao.cursor()
         
@@ -156,83 +195,101 @@ class JogoStarWars:
         cursor.close()
 
     def menu_viagem(self):
+        # 1. Abrindo o cursor manualmente no início
         cursor = self.conexao.cursor()
-        
-        # Consulta melhorada para mostrar naves do jogador
-        cursor.execute("""
-            SELECT 
-                n.modelo,
-                n.velocidade,
-                n.capacidade,
-                CASE 
-                    WHEN x.modelo IS NOT NULL THEN 'X-WING T-65'
-                    WHEN y.modelo IS NOT NULL THEN 'YT-1300'
-                    WHEN l.modelo IS NOT NULL THEN 'Lambda Shuttle'
-                    WHEN f.modelo IS NOT NULL THEN 'Fregata CR90'
-                END as tipo_nave
-            FROM Nave n
-            LEFT JOIN X_WING_T65 x ON n.modelo = x.modelo
-            LEFT JOIN YT_1300 y ON n.modelo = y.modelo
-            LEFT JOIN Lambda_Class_Shuttle l ON n.modelo = l.modelo
-            LEFT JOIN Fregata_Corelliana_CR90 f ON n.modelo = f.modelo
-            WHERE n.Id_Player = %s
-        """, (self.jogador_atual,))
-        
-        naves = cursor.fetchall()
-        if not naves:
-            print("\nVocê precisa de uma nave para viajar!")
-            return
-        
-        # Mostra naves disponíveis em formato tabular
-        print("\n=== Suas Naves ===")
-        print("Modelo          | Tipo            | Velocidade | Capacidade")
-        print("-" * 60)
-        for i, nave in enumerate(naves, 1):
-            print(f"{i}. {nave[0]:<13} | {nave[3]:<14} | {nave[1]:<10} | {nave[2]}")
-        
-        # Pega planeta atual
-        cursor.execute("""
-            SELECT nome_planeta 
-            FROM Personagem 
-            WHERE id_player = %s
-        """, (self.jogador_atual,))
-        planeta_atual = cursor.fetchone()[0]
-        
-        # Lista planetas e requisitos
-        cursor.execute("""
-            SELECT p.nome_planeta, p.clima, 
-                   CASE 
-                       WHEN p.nome_planeta = 'Coruscant' THEN 150
-                       WHEN p.nome_planeta = 'Tatooine' THEN 100
-                       ELSE 0
-                   END as velocidade_minima
-            FROM Planeta p
-            WHERE p.nome_planeta != %s
-        """, (planeta_atual,))
-        
-        planetas = cursor.fetchall()
-        print(f"\nVocê está em: {planeta_atual}")
-        print("\nPlanetas disponíveis:")
-        for planeta in planetas:
-            req = f"(Requer nave com velocidade {planeta[2]})" if planeta[2] > 0 else "(Sem requisitos)"
-            print(f"- {planeta[0]} | Clima: {planeta[1]} {req}")
-        
-        destino = input("\nPara qual planeta deseja viajar? ")
-        
-        # Seleção da nave por número
         try:
-            escolha = int(input("\nEscolha o número da nave (1 para YT-1300 padrão): ")) - 1
-            if 0 <= escolha < len(naves):
-                nave_escolhida = naves[escolha][0]
+            # Todo o código que usa o cursor fica dentro do bloco 'try'
+
+            # Consulta para mostrar naves do jogador
+            cursor.execute("""
+                SELECT 
+                    n.modelo, n.velocidade, n.capacidade,
+                    CASE 
+                        WHEN x.modelo IS NOT NULL THEN 'X-WING T-65'
+                        WHEN y.modelo IS NOT NULL THEN 'YT-1300'
+                        WHEN l.modelo IS NOT NULL THEN 'Lambda Shuttle'
+                        WHEN f.modelo IS NOT NULL THEN 'Fregata CR90'
+                    END as tipo_nave
+                FROM Nave n
+                LEFT JOIN X_WING_T65 x ON n.modelo = x.modelo
+                LEFT JOIN YT_1300 y ON n.modelo = y.modelo
+                LEFT JOIN Lambda_Class_Shuttle l ON n.modelo = l.modelo
+                LEFT JOIN Fregata_Corelliana_CR90 f ON n.modelo = f.modelo
+                WHERE n.Id_Player = %s
+            """, (self.jogador_atual,))
+            
+            naves = cursor.fetchall()
+            if not naves:
+                print("\nVocê precisa de uma nave para viajar!")
+                return # O 'finally' será executado mesmo com este 'return'
+            
+            # Mostra naves disponíveis
+            print("\n=== Suas Naves ===")
+            print("Modelo          | Tipo            | Velocidade | Capacidade")
+            print("-" * 60)
+            for i, nave in enumerate(naves, 1):
+                print(f"{i}. {nave[0]:<13} | {nave[3]:<14} | {nave[1]:<10} | {nave[2]}")
+            
+            # Pega planeta atual
+            cursor.execute("SELECT nome_planeta FROM Personagem WHERE id_player = %s", (self.jogador_atual,))
+            planeta_atual = cursor.fetchone()[0]
+            
+            # Lista planetas e requisitos
+            cursor.execute("""
+                SELECT p.nome_planeta, p.clima, 
+                       CASE 
+                           WHEN p.nome_planeta = 'Coruscant' THEN 150
+                           WHEN p.nome_planeta = 'Tatooine' THEN 100
+                           ELSE 0
+                       END as velocidade_minima
+                FROM Planeta p
+                WHERE p.nome_planeta != %s
+            """, (planeta_atual,))
+            
+            planetas = cursor.fetchall()
+            print(f"\nVocê está em: {planeta_atual}")
+            print("\nPlanetas disponíveis:")
+            for i, planeta in enumerate(planetas, 1):
+                req = f"(Requer nave com velocidade {planeta[2]})" if planeta[2] > 0 else "(Sem requisitos)"
+                print(f"{i}. {planeta[0]} | Clima: {planeta[1]} {req}")
+            
+            # Pede o número do planeta e valida
+            destino_escolhido = None
+            while True:
+                try:
+                    escolha_planeta = int(input("\nEscolha o número do planeta para o qual deseja viajar: "))
+                    if 1 <= escolha_planeta <= len(planetas):
+                        destino_escolhido = planetas[escolha_planeta - 1][0]
+                        break
+                    else:
+                        print("Opção inválida. Por favor, escolha um número da lista.")
+                except ValueError:
+                    print("Entrada inválida. Por favor, digite apenas o número.")
+
+            # Seleção da nave por número
+            nave_escolhida = None
+            if len(naves) == 1:
+                nave_escolhida = naves[0][0]
+                print(f"\nUsando sua única nave: {nave_escolhida}")
             else:
-                print("Número inválido. Usando YT-1300 padrão...")
-                nave_escolhida = 'YT-1300-001'
-        except ValueError:
-            print("Entrada inválida. Usando YT-1300 padrão...")
-            nave_escolhida = 'YT-1300-001'
-    
-        self.viajar_para_planeta(destino, nave_escolhida)
-        cursor.close()
+                 try:
+                    escolha_nave = int(input("\nEscolha o número da nave que deseja usar: ")) - 1
+                    if 0 <= escolha_nave < len(naves):
+                        nave_escolhida = naves[escolha_nave][0]
+                    else:
+                        print("Número da nave inválido. Operação cancelada.")
+                        return # O 'finally' também será executado aqui
+                 except ValueError:
+                    print("Entrada inválida. Operação cancelada.")
+                    return # E aqui também
+
+            # Chama a função de viajar
+            # Como essa função abre seu próprio cursor, não há problema em chamá-la aqui
+            self.viajar_para_planeta(destino_escolhido, nave_escolhida)
+            
+        finally:
+            # 2. O bloco 'finally' garante que o cursor será fechado, não importa o que aconteça
+            cursor.close()
 
     def viajar_para_planeta(self, planeta_destino, nave_modelo):
         cursor = self.conexao.cursor()
