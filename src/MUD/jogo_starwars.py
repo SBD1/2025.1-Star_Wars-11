@@ -122,15 +122,21 @@ class JogoStarWars:
 
     def loop_jogo(self):
         while True:
+            # Verificar se jogador está em combate
+            if self.verificar_combate_ativo():
+                self.menu_combate_ativo()
+                continue
+
             print("\n=== Comandos ===")
             print("1. status - Ver status do personagem")
             print("2. viajar - Viajar para outro planeta")
             print("3. missoes - Ver missões disponíveis")
-            print("4. sair - Sair do jogo")
-            
+            print("4. combate - Iniciar combate")
+            print("5. sair - Sair do jogo")
+
             comando = input("\n> ").lower().strip()
-            
-            if comando == "4":
+
+            if comando == "5":
                 self.jogador_atual = None
                 print("\nSessão encerrada. Voltando para o menu principal...")
                 break
@@ -140,6 +146,8 @@ class JogoStarWars:
                 self.menu_viagem()
             elif comando == "3":
                 self.menu_missoes()
+            elif comando == "4":
+                self.menu_combate()
             else:
                 print("Comando não reconhecido!")
 
@@ -605,5 +613,184 @@ class JogoStarWars:
         except Exception as erro:
             print(f"Erro ao abandonar missão: {erro}")
             self.conexao.rollback()
+        finally:
+            cursor.close()
+
+    # =====================================================
+    # SISTEMA DE COMBATE
+    # =====================================================
+
+    def verificar_combate_ativo(self):
+        """Verifica se o jogador está em combate ativo"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("""
+                SELECT id_combate FROM Combate
+                WHERE id_player = %s AND status_combate = 'ativo'
+            """, (self.jogador_atual,))
+
+            return cursor.fetchone() is not None
+        except Exception:
+            return False
+        finally:
+            cursor.close()
+
+    def menu_combate(self):
+        """Menu principal de combate"""
+        cursor = self.conexao.cursor()
+        try:
+            # Listar inimigos disponíveis no planeta atual
+            cursor.execute("SELECT * FROM listar_inimigos_planeta(%s)", (self.jogador_atual,))
+            inimigos = cursor.fetchall()
+
+            if not inimigos:
+                print("\n=== Nenhum inimigo encontrado ===")
+                print("Não há inimigos disponíveis no seu planeta atual.")
+                return
+
+            print("\n=== Inimigos Disponíveis ===")
+            print("ID  | Tipo               | Vida | Nível | Dano | Escudo | Créditos | Ameaça")
+            print("-" * 75)
+
+            for inimigo in inimigos:
+                print(f"{inimigo[0]:<3} | {inimigo[1]:<17} | {inimigo[2]:<4} | {inimigo[3]:<5} | {inimigo[4]:<4} | {inimigo[5]:<6} | {inimigo[6]:<8} | {inimigo[7]}")
+
+            print("\nEscolha um inimigo para combater ou digite 0 para voltar:")
+
+            try:
+                escolha = int(input("> "))
+                if escolha == 0:
+                    return
+
+                # Verificar se o ID do inimigo é válido
+                inimigo_escolhido = None
+                for inimigo in inimigos:
+                    if inimigo[0] == escolha:
+                        inimigo_escolhido = inimigo
+                        break
+
+                if not inimigo_escolhido:
+                    print("ID de inimigo inválido!")
+                    return
+
+                # Iniciar combate
+                self.iniciar_combate(escolha)
+
+            except ValueError:
+                print("Digite um número válido!")
+
+        except Exception as erro:
+            print(f"Erro no menu de combate: {erro}")
+        finally:
+            cursor.close()
+
+    def iniciar_combate(self, inimigo_id):
+        """Inicia um combate contra um inimigo"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("SELECT iniciar_combate(%s, %s)", (self.jogador_atual, inimigo_id))
+            resultado = cursor.fetchone()[0]
+            self.conexao.commit()  # Commit da transação
+
+            print(f"\n{resultado}")
+
+            if resultado.startswith("Sucesso"):
+                print("\n🗡️  COMBATE INICIADO! 🗡️")
+                print("Use os comandos de combate para lutar!")
+
+        except Exception as erro:
+            print(f"Erro ao iniciar combate: {erro}")
+        finally:
+            cursor.close()
+
+    def menu_combate_ativo(self):
+        """Menu para quando o jogador está em combate ativo"""
+        cursor = self.conexao.cursor()
+        try:
+            # Obter status do combate atual
+            cursor.execute("SELECT * FROM obter_status_combate(%s)", (self.jogador_atual,))
+            status = cursor.fetchone()
+
+            if not status:
+                print("Erro: Combate não encontrado!")
+                return
+
+            combate_id, tipo_inimigo, vida_jogador, vida_inimigo, turno_atual, turno_numero = status
+
+            print("\n" + "="*50)
+            print("🗡️  COMBATE EM ANDAMENTO 🗡️")
+            print("="*50)
+            print(f"Inimigo: {tipo_inimigo}")
+            print(f"Sua vida: {vida_jogador} HP")
+            print(f"Vida do inimigo: {vida_inimigo} HP")
+            print(f"Turno #{turno_numero + 1}")
+            print("-"*50)
+
+            if turno_atual == 'jogador':
+                print("É o seu turno!")
+                print("\nAções disponíveis:")
+                print("1. Atacar")
+                print("2. Defender")
+                print("3. Fugir")
+
+                try:
+                    escolha = input("\nEscolha sua ação: ").strip()
+
+                    if escolha == "1":
+                        self.processar_acao_jogador(combate_id, "ataque")
+                    elif escolha == "2":
+                        self.processar_acao_jogador(combate_id, "defesa")
+                    elif escolha == "3":
+                        self.processar_acao_jogador(combate_id, "fuga")
+                    else:
+                        print("Ação inválida!")
+
+                except Exception as erro:
+                    print(f"Erro ao processar ação: {erro}")
+            else:
+                print("Turno do inimigo...")
+                input("Pressione Enter para continuar...")
+                self.processar_turno_inimigo(combate_id)
+
+        except Exception as erro:
+            print(f"Erro no combate: {erro}")
+        finally:
+            cursor.close()
+
+    def processar_acao_jogador(self, combate_id, acao):
+        """Processa a ação do jogador no combate"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("SELECT processar_turno_jogador(%s, %s)", (combate_id, acao))
+            resultado = cursor.fetchone()[0]
+            self.conexao.commit()  # Commit da transação
+
+            print(f"\n{resultado}")
+
+            # Se não fugiu, processar turno do inimigo
+            if not resultado.startswith("Você fugiu") and not "derrotado" in resultado:
+                input("\nPressione Enter para o turno do inimigo...")
+                self.processar_turno_inimigo(combate_id)
+
+        except Exception as erro:
+            print(f"Erro ao processar ação do jogador: {erro}")
+        finally:
+            cursor.close()
+
+    def processar_turno_inimigo(self, combate_id):
+        """Processa o turno do inimigo"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("SELECT processar_turno_inimigo(%s)", (combate_id,))
+            resultado = cursor.fetchone()[0]
+            self.conexao.commit()  # Commit da transação
+
+            print(f"\n{resultado}")
+
+            if not "derrotado" in resultado:
+                input("\nPressione Enter para continuar...")
+
+        except Exception as erro:
+            print(f"Erro ao processar turno do inimigo: {erro}")
         finally:
             cursor.close()
