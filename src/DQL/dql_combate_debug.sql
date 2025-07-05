@@ -3,6 +3,54 @@
 -- Consultas para identificar problemas
 -- ========================================
 
+-- 🎯 HISTÓRICO COMPLETO DE COMBATES POR JOGADOR
+-- Mostra todos os combates de todos os jogadores com resultado
+SELECT
+    p.id_player,
+    p.nome_classe,
+    p.level,
+    p.mortes,
+    i.tipo_mob AS inimigo_enfrentado,
+    i.nivel AS nivel_inimigo,
+    cr.vencedor,
+    CASE
+        WHEN cr.vencedor = 'jogador' THEN '🏆 VITÓRIA'
+        WHEN cr.vencedor = 'inimigo' THEN '💀 DERROTA'
+        ELSE '🏃 FUGA'
+    END AS resultado,
+    cr.xp_ganho,
+    cr.gcs_ganho,
+    cr.total_turnos,
+    cr.duracao_combate,
+    c.data_inicio
+FROM Combate c
+JOIN Personagem p ON c.id_player = p.id_player
+JOIN Inimigo i ON c.id_mob = i.id_mob
+JOIN Combate_Resultado cr ON c.id_combate = cr.id_combate
+ORDER BY p.id_player, c.data_inicio DESC;
+
+-- 📊 RESUMO DE COMBATES POR JOGADOR
+-- Estatísticas consolidadas de cada jogador
+SELECT
+    p.id_player,
+    p.nome_classe,
+    p.level,
+    p.mortes,
+    COUNT(*) AS total_combates,
+    SUM(CASE WHEN cr.vencedor = 'jogador' THEN 1 ELSE 0 END) AS vitorias,
+    SUM(CASE WHEN cr.vencedor = 'inimigo' THEN 1 ELSE 0 END) AS derrotas,
+    SUM(CASE WHEN cr.vencedor = 'fuga' THEN 1 ELSE 0 END) AS fugas,
+    ROUND(
+        (SUM(CASE WHEN cr.vencedor = 'jogador' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 1
+    ) AS taxa_vitoria_pct,
+    SUM(cr.xp_ganho) AS total_xp_ganho,
+    SUM(cr.gcs_ganho) AS total_gcs_ganho
+FROM Combate c
+JOIN Personagem p ON c.id_player = p.id_player
+JOIN Combate_Resultado cr ON c.id_combate = cr.id_combate
+GROUP BY p.id_player, p.nome_classe, p.level, p.mortes
+ORDER BY vitorias DESC, total_combates DESC;
+
 -- 1. VERIFICAR INTEGRIDADE DOS DADOS
 -- Procura por inconsistências no sistema
 SELECT 

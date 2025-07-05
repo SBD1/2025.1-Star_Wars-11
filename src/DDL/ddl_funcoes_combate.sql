@@ -122,8 +122,14 @@ BEGIN
         modificador_classe := 0;
     END IF;
     
-    -- Cálculo base do dano
-    dano_final := dano_base + (nivel_atacante * 2) + modificador_classe;
+    -- Cálculo base do dano (balanceado)
+    IF eh_jogador THEN
+        -- Jogador: dano base + level*3 + modificador classe
+        dano_final := dano_base + (nivel_atacante * 3) + modificador_classe;
+    ELSE
+        -- Inimigo: dano base reduzido + level*1.5 (mais fraco que jogador)
+        dano_final := (dano_base * 0.6) + (nivel_atacante * 1.5);
+    END IF;
     
     -- Chance de crítico (5%)
     chance_critico := floor(random() * 100) + 1;
@@ -316,6 +322,7 @@ RETURNS TEXT AS $$
 DECLARE
     jogador_id INT;
     inimigo_id INT;
+    vida_final_jogador INT;
     xp_recompensa INT := 0;
     gcs_recompensa INT := 0;
     nivel_inimigo INT;
@@ -331,7 +338,8 @@ DECLARE
     novo_level INT;
 BEGIN
     -- Obter dados do combate
-    SELECT id_player, id_mob, data_inicio INTO jogador_id, inimigo_id, data_inicio_combate
+    SELECT id_player, id_mob, vida_jogador_atual, data_inicio
+    INTO jogador_id, inimigo_id, vida_final_jogador, data_inicio_combate
     FROM Combate WHERE id_combate = combate_id;
 
     IF NOT FOUND THEN
@@ -369,7 +377,8 @@ BEGIN
         UPDATE Personagem
         SET xp = xp + xp_recompensa,
             gcs = gcs + gcs_recompensa,
-            level = novo_level
+            level = novo_level,
+            vida_base = vida_final_jogador  -- Atualizar vida atual
         WHERE id_player = jogador_id;
 
         resultado_texto := 'Vitória! Você ganhou ' || xp_recompensa || ' XP e ' || gcs_recompensa || ' GCS.';
@@ -379,8 +388,21 @@ BEGIN
         END IF;
 
     ELSIF vencedor = 'inimigo' THEN
-        resultado_texto := 'Derrota! Você foi derrotado em combate.';
+        -- Penalidades por morte
+        UPDATE Personagem
+        SET mortes = mortes + 1,
+            gcs = GREATEST(gcs - 100, 0),  -- Perde 100 GCS (mínimo 0)
+            xp = GREATEST(xp - (level * 10), 0),  -- Perde XP baseado no level
+            vida_base = 100  -- Restaurar vida completa após morte
+        WHERE id_player = jogador_id;
+
+        resultado_texto := 'Derrota! Você foi derrotado em combate. Perdeu 100 GCS e ' || (jogador_level_atual * 10) || ' XP.';
     ELSE
+        -- Caso de fuga - manter vida atual
+        UPDATE Personagem
+        SET vida_base = vida_final_jogador
+        WHERE id_player = jogador_id;
+
         resultado_texto := 'Você fugiu do combate.';
     END IF;
 

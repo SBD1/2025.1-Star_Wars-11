@@ -56,9 +56,11 @@ ORDER BY c.data_fim DESC;
 
 -- 4. ESTATÍSTICAS POR JOGADOR
 -- Mostra estatísticas de combate de cada jogador
-SELECT 
+SELECT
     p.id_player,
     p.nome_classe,
+    p.level,
+    p.mortes,
     COUNT(*) AS total_combates,
     SUM(CASE WHEN cr.vencedor = 'jogador' THEN 1 ELSE 0 END) AS vitorias,
     SUM(CASE WHEN cr.vencedor = 'inimigo' THEN 1 ELSE 0 END) AS derrotas,
@@ -69,7 +71,7 @@ SELECT
 FROM Combate_Resultado cr
 JOIN Combate c ON cr.id_combate = c.id_combate
 JOIN Personagem p ON c.id_player = p.id_player
-GROUP BY p.id_player, p.nome_classe
+GROUP BY p.id_player, p.nome_classe, p.level, p.mortes
 ORDER BY vitorias DESC;
 
 -- 5. INIMIGOS DISPONÍVEIS POR PLANETA
@@ -112,7 +114,14 @@ FROM Inimigo
 
 UNION ALL
 
-SELECT 
+SELECT
     'Jogadores com Combates' AS categoria,
     COUNT(DISTINCT id_player)::text AS valor
-FROM Combate;
+FROM Combate
+
+UNION ALL
+
+SELECT
+    'Total de Mortes de Jogadores' AS categoria,
+    SUM(mortes)::text AS valor
+FROM Personagem;

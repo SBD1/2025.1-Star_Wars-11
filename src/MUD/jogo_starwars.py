@@ -690,6 +690,7 @@ class JogoStarWars:
         try:
             cursor.execute("SELECT iniciar_combate(%s, %s)", (self.jogador_atual, inimigo_id))
             resultado = cursor.fetchone()[0]
+            self.conexao.commit()  # Commit da transação
 
             print(f"\n{resultado}")
 
@@ -762,6 +763,7 @@ class JogoStarWars:
         try:
             cursor.execute("SELECT processar_turno_jogador(%s, %s)", (combate_id, acao))
             resultado = cursor.fetchone()[0]
+            self.conexao.commit()  # Commit da transação
 
             print(f"\n{resultado}")
 
@@ -781,6 +783,7 @@ class JogoStarWars:
         try:
             cursor.execute("SELECT processar_turno_inimigo(%s)", (combate_id,))
             resultado = cursor.fetchone()[0]
+            self.conexao.commit()  # Commit da transação
 
             print(f"\n{resultado}")
 
