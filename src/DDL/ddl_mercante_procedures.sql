@@ -25,8 +25,8 @@ BEGIN
 
   -- 2.1.2: Checa saldo do jogador
   v_custo := v_preco * p_qtde;
-  IF (SELECT saldo FROM Personagem WHERE id_player = p_player) < v_custo THEN
-    RAISE EXCEPTION 'Saldo insuficiente: precisa de %, tem %', v_custo, (SELECT saldo FROM Personagem WHERE id_player = p_player);
+  IF (SELECT gcs FROM Personagem WHERE id_player = p_player) < v_custo THEN
+    RAISE EXCEPTION 'Saldo insuficiente: precisa de %, tem %', v_custo, (SELECT gcs FROM Personagem WHERE id_player = p_player);
   END IF;
 
   -- 2.1.3: Verifica espaço no inventário do jogador
@@ -46,7 +46,7 @@ BEGIN
 
   -- 2.1.5: Debita o saldo do jogador
   UPDATE Personagem
-     SET saldo = saldo - v_custo
+     SET gcs = gcs - v_custo
    WHERE id_player = p_player;
 
   -- 2.1.6: Deduz do estoque do mercante
@@ -104,7 +104,7 @@ BEGIN
 
   -- 2.2.4: Credita saldo do jogador
   UPDATE Personagem
-     SET saldo = saldo + (v_preco * p_qtde)
+     SET gcs = gcs + (v_preco * p_qtde)
    WHERE id_player = p_player;
 
   -- 2.2.5: Reabastece o estoque do mercante
