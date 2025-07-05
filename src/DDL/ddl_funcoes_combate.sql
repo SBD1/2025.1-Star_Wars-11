@@ -389,14 +389,35 @@ BEGIN
 
     ELSIF vencedor = 'inimigo' THEN
         -- Penalidades por morte
-        UPDATE Personagem
-        SET mortes = mortes + 1,
-            gcs = GREATEST(gcs - 100, 0),  -- Perde 100 GCS (mínimo 0)
-            xp = GREATEST(xp - (level * 10), 0),  -- Perde XP baseado no level
-            vida_base = 100  -- Restaurar vida completa após morte
-        WHERE id_player = jogador_id;
+        DECLARE
+            gcs_atual INT;
+            vida_ressurreicao INT;
+        BEGIN
+            -- Obter GCS atual do jogador
+            SELECT gcs INTO gcs_atual FROM Personagem WHERE id_player = jogador_id;
 
-        resultado_texto := 'Derrota! Você foi derrotado em combate. Perdeu 100 GCS e ' || (jogador_level_atual * 10) || ' XP.';
+            -- Determinar vida de ressurreição baseada nos GCS
+            IF gcs_atual >= 100 THEN
+                vida_ressurreicao := 100;  -- Vida completa se tiver dinheiro
+            ELSE
+                vida_ressurreicao := 50;   -- Vida reduzida se não tiver dinheiro
+            END IF;
+
+            -- Aplicar penalidades
+            UPDATE Personagem
+            SET mortes = mortes + 1,
+                gcs = GREATEST(gcs - 100, 0),  -- Perde 100 GCS (mínimo 0)
+                xp = GREATEST(xp - (level * 10), 0),  -- Perde XP baseado no level
+                vida_base = vida_ressurreicao  -- Vida baseada nos GCS disponíveis
+            WHERE id_player = jogador_id;
+
+            -- Mensagem personalizada baseada na situação
+            IF gcs_atual >= 100 THEN
+                resultado_texto := 'Derrota! Você foi derrotado em combate. Perdeu 100 GCS e ' || (jogador_level_atual * 10) || ' XP. Ressuscitou com vida completa.';
+            ELSE
+                resultado_texto := 'Derrota! Você foi derrotado em combate. Perdeu ' || gcs_atual || ' GCS e ' || (jogador_level_atual * 10) || ' XP. Sem dinheiro suficiente - ressuscitou com vida reduzida (50 HP).';
+            END IF;
+        END;
     ELSE
         -- Caso de fuga - manter vida atual
         UPDATE Personagem
