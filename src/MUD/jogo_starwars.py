@@ -123,25 +123,37 @@ class JogoStarWars:
     def loop_jogo(self):
         while True:
             print("\n=== Comandos ===")
-            print("1. status - Ver status do personagem")
-            print("2. viajar - Viajar para outro planeta")
-            print("3. missoes - Ver missões disponíveis")
-            print("4. sair - Sair do jogo")
+            print("1. status   - Ver status do personagem")
+            print("2. viajar   - Viajar para outro planeta")
+            print("3. missoes  - Ver missões disponíveis")
+            print("4. comprar  - Comprar item do mercante")
+            print("5. vender   - Vender item ao mercante")
+            print("6. sair     - Sair do jogo")
             
             comando = input("\n> ").lower().strip()
-            
-            if comando == "4":
+
+            if comando == "1" or comando == "status":
+                self.mostrar_status()
+
+            elif comando == "2" or comando == "viajar":
+                self.menu_viagem()
+
+            elif comando == "3" or comando == "missoes":
+                self.menu_missoes()
+
+            elif comando == "4" or comando == "comprar":
+                self.comprar_item_ui()
+
+            elif comando == "5" or comando == "vender":
+                self.vender_item_ui()
+
+            elif comando == "6" or comando == "sair":
                 self.jogador_atual = None
                 print("\nSessão encerrada. Voltando para o menu principal...")
                 break
-            elif comando == "1":
-                self.mostrar_status()
-            elif comando == "2":
-                self.menu_viagem()
-            elif comando == "3":
-                self.menu_missoes()
+
             else:
-                print("Comando não reconhecido!")
+                print("Comando não reconhecido! Tente novamente.")
 
     def mostrar_status(self):
         cursor = self.conexao.cursor()
@@ -363,6 +375,36 @@ class JogoStarWars:
                 break
             else:
                 print("Opção inválida!")
+    ## Interface de compra e venda de itens com mercantes
+    def comprar_item_ui(self):
+        """Interface de compra de item junto ao mercante."""
+        try:
+            player = self.jogador_atual
+            mercante = int(input("ID do mercante: "))
+            item     = int(input("ID do item: "))
+            qtde     = int(input("Quantidade a comprar: "))
+            with self.conexao.cursor() as cur:
+                cur.callproc('comprar_item', [player, mercante, item, qtde])
+            self.conexao.commit()
+            print(f"Compra de {qtde}x item {item} do mercante {mercante} realizada!")
+        except Exception as e:
+            self.conexao.rollback()
+            print(f"Erro na compra: {e}")
+
+    def vender_item_ui(self):
+        """Interface de venda de item ao mercante."""
+        try:
+            player = self.jogador_atual
+            mercante = int(input("ID do mercante: "))
+            item     = int(input("ID do item: "))
+            qtde     = int(input("Quantidade a vender: "))
+            with self.conexao.cursor() as cur:
+                cur.callproc('vender_item', [player, mercante, item, qtde])
+            self.conexao.commit()
+            print(f"Venda de {qtde}x item {item} para mercante {mercante} realizada!")
+        except Exception as e:
+            self.conexao.rollback()
+            print(f"Erro na venda: {e}")
 
     def listar_missoes_disponiveis(self):
         """Lista missões disponíveis para o jogador atual"""
