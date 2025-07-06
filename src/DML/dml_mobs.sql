@@ -4,11 +4,11 @@ VALUES
     ('Dark Trooper', 2),
     ('Rancor', 3);
 
-INSERT INTO Inimigo (vida_base, nivel, dano_base, pontos_escudo, creditos, tipo_mob, planeta_origem)
+INSERT INTO Inimigo (vida_base, vida_atual, nivel, dano_base, pontos_escudo, creditos, tipo_mob, planeta_origem)
 VALUES 
-    (100, 1, 20, 0, 50, 'Stormtrooper', 'Tatooine'),
-    (200, 5, 40, 50, 150, 'Dark Trooper', 'Coruscant'),
-    (500, 10, 100, 100, 500, 'Rancor', 'Tatooine');
+    (100, 100, 1, 20, 0, 50, 'Stormtrooper', 'Tatooine'),
+    (200, 200, 5, 40, 50, 150, 'Dark Trooper', 'Coruscant'),
+    (500, 500, 10, 100, 100, 500, 'Rancor', 'Tatooine');
 
 INSERT INTO Normal (tipo_mob, Formacao_Tatica, Patrulha, Ataque_Coordenado)
 VALUES ('Stormtrooper', true, true, true);
