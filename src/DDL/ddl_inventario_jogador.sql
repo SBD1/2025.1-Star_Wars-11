@@ -27,3 +27,16 @@ CREATE TABLE Inventario_Item (
     FOREIGN KEY (id_item) REFERENCES Item(id_item),
     CHECK (quantidade > 0)
 );
+
+-- adicionando colunas para o tipo de efeito e o valor do efeito
+ALTER TABLE Item
+ADD COLUMN IF NOT EXISTS efeito_tipo VARCHAR(20), -- 'CURA_VIDA', etc.
+ADD COLUMN IF NOT EXISTS efeito_valor INT;
+
+COMMENT ON COLUMN Item.efeito_tipo IS 'Define a ação que o item executa (ex: CURA_VIDA).';
+COMMENT ON COLUMN Item.efeito_valor IS 'O valor numérico do efeito (ex: 50 para curar 50 de vida).';
+
+-- Agora, vamos atualizar nosso Medkit para ter um efeito
+UPDATE Item 
+SET efeito_tipo = 'CURA_VIDA', efeito_valor = 50
+WHERE id_item = 2; -- Medkit Pequeno

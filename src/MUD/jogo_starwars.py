@@ -139,11 +139,12 @@ class JogoStarWars:
             print("3. viajar - Viajar para outro planeta")
             print("4. missoes - Ver missões disponíveis")
             print("5. combate - Iniciar combate")
-            print("6. sair - Sair do jogo")
-
+            print("6. inventario - Abrir seu inventário")
+            print("7. sair - Sair do jogo")
+            
             comando = input("\n> ").lower().strip()
 
-            if comando == "6":
+            if comando == "7":
                 self.jogador_atual = None
                 print("\nSessão encerrada. Voltando para o menu principal...")
                 break
@@ -157,6 +158,8 @@ class JogoStarWars:
                 self.menu_missoes()
             elif comando == "5":
                 self.menu_combate()
+            elif comando == "6":
+                self.menu_inventario()
             else:
                 print("Comando não reconhecido!")
 
@@ -1091,3 +1094,82 @@ class JogoStarWars:
             self.conexao.rollback()
         finally:
             cursor.close()
+
+    def menu_inventario(self):
+        """Menu principal do inventário"""
+        while True:
+            try:
+                with self.conexao.cursor() as cursor:
+                    cursor.execute("SELECT * FROM listar_inventario_jogador(%s)", (self.jogador_atual,))
+                    itens = cursor.fetchall()
+                    
+                    cursor.execute("SELECT Peso_Total, Espaco_Maximo FROM Inventario WHERE Id_Player = %s", (self.jogador_atual,))
+                    inv_info = cursor.fetchone()
+
+                    print("\n=== INVENTÁRIO ===")
+                    if not itens:
+                        print("Seu inventário está vazio.")
+                    else:
+                        print(f"Espaço: {inv_info[0]}/{inv_info[1]}")
+                        print("-" * 50)
+                        print("ID  | Nome              | Qtd | Tipo       | Peso")
+                        print("-" * 50)
+                        for item in itens:
+                            id_item, nome, qtd, tipo, peso = item
+                            print(f"{id_item:<3} | {nome:<18} | {qtd:<3} | {tipo:<10} | {peso}")
+                        print("-" * 50)
+
+                    print("\n1. Usar item")
+                    print("2. Voltar")
+                    
+                    escolha = input("\n> ").strip()
+                    
+                    if escolha == '1':
+                        if not itens:
+                            print("Você não tem itens para usar.")
+                            continue
+                        self.usar_item_inventario()
+                    elif escolha == '2':
+                        break
+                    else:
+                        print("Opção inválida.")
+
+            except Exception as erro:
+                print(f"Erro ao acessar inventário: {erro}")
+                self.conexao.rollback()
+                break
+
+    def usar_item_inventario(self):
+        """Lógica para usar um item do inventário."""
+        try:
+            item_id_str = input("Digite o ID do item que deseja usar: ")
+            if not item_id_str.isdigit():
+                print("ID inválido. Por favor, digite um número.")
+                return
+
+            item_id = int(item_id_str)
+
+            with self.conexao.cursor() as cursor:
+                # Chama a função do banco de dados
+                cursor.execute("SELECT usar_item_inventario(%s, %s)", (self.jogador_atual, item_id))
+                resultado = cursor.fetchone()[0]
+                
+                print(f"\n{resultado}")
+
+                # =================================================
+                # CORREÇÃO CRÍTICA ADICIONADA AQUI
+                # =================================================
+                # Se a função NÃO retornou um erro, salvamos a transação.
+                if "ERRO:" not in resultado and "não pode ser usado" not in resultado and "não possui este item" not in resultado:
+                    self.conexao.commit()
+                    print("Alterações salvas no banco de dados.")
+                else:
+                    # Se deu erro, garantimos que nada seja salvo.
+                    self.conexao.rollback()
+
+        except ValueError:
+            print("Entrada inválida.")
+        except (Exception, psycopg2.Error) as error:
+            print(f"Erro ao usar item: {error}")
+            # Desfaz qualquer parte da transação em caso de erro crítico.
+            self.conexao.rollback()

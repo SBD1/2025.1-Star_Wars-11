@@ -3,6 +3,8 @@
 -- =====================================================
 
 -- Funcao para listar inimigos disponiveis no planeta do jogador
+DROP FUNCTION IF EXISTS listar_inimigos_planeta(integer);
+
 CREATE OR REPLACE FUNCTION listar_inimigos_planeta(jogador_id INT)
 RETURNS TABLE (
     id_mob INT,
@@ -344,6 +346,10 @@ DECLARE
     dano_total_inimigo INT;
     vida_ressurreicao INT;
     gcs_atual INT;
+    loot_drop RECORD;
+    drop_chance NUMERIC;
+    chance_roll NUMERIC;
+    loot_texto TEXT := '';
 BEGIN
     -- Obter dados do combate
     SELECT id_player, id_mob, data_inicio INTO jogador_id, inimigo_id, data_inicio_combate
@@ -389,7 +395,32 @@ BEGIN
             vida_base = 100  -- Restaurar vida apos vitoria
         WHERE id_player = jogador_id;
 
-        resultado_texto := 'Vitoria! Voce ganhou ' || xp_recompensa || ' XP e ' || gcs_recompensa || ' GCS.';
+        FOR loot_drop IN 
+            SELECT * FROM Inventario_IA WHERE id_mob = inimigo_id
+        LOOP
+            -- Converte a raridade em chance numérica
+            drop_chance := CASE loot_drop.drop_rarity
+                                WHEN 'Comum' THEN 60.0
+                                WHEN 'Incomum' THEN 25.0
+                                WHEN 'Raro' THEN 5.0
+                                WHEN 'Épico' THEN 1.0
+                                WHEN 'Garantido' THEN 100.0
+                                ELSE 0.0
+                           END;
+            
+            chance_roll := random() * 100; -- Gera um número de 0.00 a 99.99
+            
+            IF chance_roll < drop_chance THEN
+                -- O item dropou!
+                -- Usamos a quantidade definida no Inventario_IA
+                PERFORM adicionar_item_inventario(jogador_id, loot_drop.id_item, loot_drop.quantidade);
+
+                -- Adicionar ao texto de resultado para o jogador
+                loot_texto := loot_texto || ' | Loot: ' || (SELECT nome FROM Item WHERE id_item = loot_drop.id_item) || ' (x' || loot_drop.quantidade || ')';
+            END IF;
+        END LOOP;
+
+        resultado_texto := 'Vitoria! Voce ganhou ' || xp_recompensa || ' XP e ' || gcs_recompensa || ' GCS.' || loot_texto;
 
         IF novo_level > jogador_level_atual THEN
             resultado_texto := resultado_texto || ' Parabens! Voce subiu para o level ' || novo_level || '!';
