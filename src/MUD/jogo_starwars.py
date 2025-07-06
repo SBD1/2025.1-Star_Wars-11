@@ -625,11 +625,14 @@ class JogoStarWars:
                 return
 
             print("\n=== Inimigos Disponíveis ===")
-            print("ID  | Tipo               | Vida | Nível | Dano | Escudo | Créditos | Ameaça")
-            print("-" * 75)
+            print("ID  | Tipo               | Vida | Nível | Dano | Escudo | Créditos | Categoria")
+            print("-" * 80)
 
             for inimigo in inimigos:
-                print(f"{inimigo[0]:<3} | {inimigo[1]:<17} | {inimigo[2]:<4} | {inimigo[3]:<5} | {inimigo[4]:<4} | {inimigo[5]:<6} | {inimigo[6]:<8} | {inimigo[7]}")
+                # inimigo agora tem 9 campos: id_mob, tipo_mob, vida_base, nivel, dano_base, pontos_escudo, creditos, nivel_ameaca, categoria_mob
+                categoria = inimigo[8] if len(inimigo) > 8 else "Normal"
+                simbolo = {"Normal": "⚔️", "Elite": "🛡️", "Boss": "👑"}.get(categoria, "❓")
+                print(f"{inimigo[0]:<3} | {inimigo[1]:<17} | {inimigo[2]:<4} | {inimigo[3]:<5} | {inimigo[4]:<4} | {inimigo[5]:<6} | {inimigo[6]:<8} | {simbolo} {categoria}")
 
             print("\nEscolha um inimigo para combater ou digite 0 para voltar:")
 
