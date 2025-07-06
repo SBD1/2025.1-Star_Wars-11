@@ -67,8 +67,8 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
-        p.nome_planeta,
+    SELECT
+        pl.nome_planeta,
         c.nome_cidade,
         s.nome_setor,
         s.id_setor,
@@ -78,6 +78,7 @@ BEGIN
     FROM Personagem p
     LEFT JOIN Setor s ON p.id_setor = s.id_setor
     LEFT JOIN Cidade c ON s.id_cidade = c.id_cidade
+    LEFT JOIN Planeta pl ON c.nome_planeta = pl.nome_planeta
     WHERE p.id_player = jogador_id;
 END;
 $$ LANGUAGE plpgsql;
@@ -279,5 +280,37 @@ BEGIN
     WHERE id_player = jogador_id;
     
     RETURN 'Voce viajou para ' || planeta_destino || ' e chegou em: ' || nome_primeira_cidade || ' - ' || nome_primeiro_setor;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Funcao para listar inimigos do setor atual do jogador
+CREATE OR REPLACE FUNCTION listar_inimigos_setor_jogador(jogador_id INT)
+RETURNS TABLE (
+    id_mob INT,
+    tipo_mob VARCHAR(22),
+    vida_base INT,
+    nivel INT,
+    dano_base INT,
+    pontos_escudo INT,
+    creditos INT,
+    nivel_ameaca INT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        i.id_mob,
+        i.tipo_mob,
+        i.vida_base,
+        i.nivel,
+        i.dano_base,
+        i.pontos_escudo,
+        i.creditos,
+        m.nivel_ameaca
+    FROM Inimigo i
+    JOIN MOB m ON i.tipo_mob = m.tipo_mob
+    JOIN Inimigo_Setor ins ON i.id_mob = ins.id_mob
+    JOIN Personagem p ON p.id_setor = ins.id_setor
+    WHERE p.id_player = jogador_id
+    ORDER BY m.nivel_ameaca, i.nivel;
 END;
 $$ LANGUAGE plpgsql;

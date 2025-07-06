@@ -235,3 +235,40 @@ AND s.nome_setor = 'Campo de Batalha'
 AND s.id_cidade = c.id_cidade
 AND c.nome_planeta = 'Naboo'
 ON CONFLICT (id_mob, id_setor) DO NOTHING;
+
+-- EXPANSAO: Adicionar mais cidades e setores para todos os planetas
+
+-- TATOOINE - Cidades adicionais
+INSERT INTO Cidade (nome_cidade, descricao, nome_planeta) VALUES
+('Anchorhead', 'Pequena cidade de mineracao no deserto', 'Tatooine'),
+('Bestine', 'Capital administrativa de Tatooine', 'Tatooine'),
+('Mos Espa Arena', 'Arena de corridas de pods famosa', 'Tatooine')
+ON CONFLICT (nome_cidade, nome_planeta) DO NOTHING;
+
+-- Setores para Anchorhead
+INSERT INTO Setor (nome_setor, descricao, tipo_setor, nivel_perigo, id_cidade) VALUES
+('Centro de Mineracao', 'Operacoes de mineracao de umidade', 'industrial', 2,
+    (SELECT id_cidade FROM Cidade WHERE nome_cidade = 'Anchorhead' AND nome_planeta = 'Tatooine')),
+('Mercado Local', 'Pequeno mercado para suprimentos', 'comercial', 1,
+    (SELECT id_cidade FROM Cidade WHERE nome_cidade = 'Anchorhead' AND nome_planeta = 'Tatooine')),
+('Periferia do Deserto', 'Limite da cidade com o deserto selvagem', 'perigoso', 4,
+    (SELECT id_cidade FROM Cidade WHERE nome_cidade = 'Anchorhead' AND nome_planeta = 'Tatooine'))
+ON CONFLICT (nome_setor, id_cidade) DO NOTHING;
+
+-- Setores para Bestine
+INSERT INTO Setor (nome_setor, descricao, tipo_setor, nivel_perigo, id_cidade) VALUES
+('Palacio do Governador', 'Sede do governo planetario', 'administrativo', 1,
+    (SELECT id_cidade FROM Cidade WHERE nome_cidade = 'Bestine' AND nome_planeta = 'Tatooine')),
+('Quartel Imperial', 'Base das tropas imperiais', 'militar', 3,
+    (SELECT id_cidade FROM Cidade WHERE nome_cidade = 'Bestine' AND nome_planeta = 'Tatooine')),
+('Distrito Comercial', 'Area comercial principal da capital', 'comercial', 2,
+    (SELECT id_cidade FROM Cidade WHERE nome_cidade = 'Bestine' AND nome_planeta = 'Tatooine'))
+ON CONFLICT (nome_setor, id_cidade) DO NOTHING;
+
+-- Setores para Mos Espa Arena
+INSERT INTO Setor (nome_setor, descricao, tipo_setor, nivel_perigo, id_cidade) VALUES
+('Pista de Corrida', 'Circuito principal das corridas de pods', 'esportivo', 3,
+    (SELECT id_cidade FROM Cidade WHERE nome_cidade = 'Mos Espa Arena' AND nome_planeta = 'Tatooine')),
+('Boxes dos Pilotos', 'Area de preparacao dos pods', 'comercial', 2,
+    (SELECT id_cidade FROM Cidade WHERE nome_cidade = 'Mos Espa Arena' AND nome_planeta = 'Tatooine'))
+ON CONFLICT (nome_setor, id_cidade) DO NOTHING;

@@ -245,24 +245,18 @@ class JogoStarWars:
             cursor.execute("SELECT nome_planeta FROM Personagem WHERE id_player = %s", (self.jogador_atual,))
             planeta_atual = cursor.fetchone()[0]
             
-            # Lista planetas e requisitos
+            # Lista planetas disponíveis
             cursor.execute("""
-                SELECT p.nome_planeta, p.clima, 
-                       CASE 
-                           WHEN p.nome_planeta = 'Coruscant' THEN 150
-                           WHEN p.nome_planeta = 'Tatooine' THEN 100
-                           ELSE 0
-                       END as velocidade_minima
+                SELECT p.nome_planeta, p.clima
                 FROM Planeta p
                 WHERE p.nome_planeta != %s
             """, (planeta_atual,))
-            
+
             planetas = cursor.fetchall()
             print(f"\nVocê está em: {planeta_atual}")
             print("\nPlanetas disponíveis:")
             for i, planeta in enumerate(planetas, 1):
-                req = f"(Requer nave com velocidade {planeta[2]})" if planeta[2] > 0 else "(Sem requisitos)"
-                print(f"{i}. {planeta[0]} | Clima: {planeta[1]} {req}")
+                print(f"{i}. {planeta[0]} | Clima: {planeta[1]}")
             
             # Pede o número do planeta e valida
             destino_escolhido = None
@@ -296,56 +290,28 @@ class JogoStarWars:
 
             # Chama a função de viajar
             # Como essa função abre seu próprio cursor, não há problema em chamá-la aqui
-            self.viajar_para_planeta(destino_escolhido, nave_escolhida)
+            self.viajar_para_planeta(destino_escolhido)
             
         finally:
             # 2. O bloco 'finally' garante que o cursor será fechado, não importa o que aconteça
             cursor.close()
 
-    def viajar_para_planeta(self, planeta_destino, nave_modelo):
+    def viajar_para_planeta(self, planeta_destino):
         cursor = self.conexao.cursor()
-        
-        # Verifica se a nave pertence ao jogador
-        cursor.execute("""
-            SELECT velocidade 
-            FROM Nave 
-            WHERE modelo = %s AND Id_Player = %s
-        """, (nave_modelo, self.jogador_atual))
-        
-        nave = cursor.fetchone()
-        if not nave:
-            print("Você não possui esta nave!")
-            return
-        
-        # Verifica requisitos do planeta
-        velocidade_minima = 0
-        if planeta_destino == 'Coruscant':
-            velocidade_minima = 150
-        elif planeta_destino == 'Tatooine':
-            velocidade_minima = 100
-        
-        if nave[0] < velocidade_minima:
-            print(f"Sua nave é muito lenta para viajar para {planeta_destino}!");
-            print(f"Velocidade mínima necessária: {velocidade_minima}");
-            print(f"Velocidade da sua nave: {nave[0]}");
-            return
-        
-        # Resto da lógica de viagem
+
         try:
-            cursor.execute("""
-                UPDATE Personagem 
-                SET nome_planeta = %s 
-                WHERE id_player = %s
-            """, (planeta_destino, self.jogador_atual))
-            
+            # A função do banco agora faz toda a validação, incluindo velocidade e nave
+            cursor.execute("SELECT viajar_para_planeta(%s, %s)", (self.jogador_atual, planeta_destino))
+            resultado = cursor.fetchone()[0]
+
             self.conexao.commit()
-            print(f"\nViagem concluída! Você chegou em {planeta_destino} usando {nave_modelo}")
-            
+            print(f"\n{resultado}")
+
         except Exception as erro:
             print(f"Erro ao viajar: {erro}")
             self.conexao.rollback()
-    
-        cursor.close()
+        finally:
+            cursor.close()
 
     def menu_missoes(self):
         """Menu principal de missões"""
@@ -642,8 +608,8 @@ class JogoStarWars:
         """Menu principal de combate"""
         cursor = self.conexao.cursor()
         try:
-            # Listar inimigos disponíveis no planeta atual
-            cursor.execute("SELECT * FROM listar_inimigos_planeta(%s)", (self.jogador_atual,))
+            # Listar inimigos disponíveis no setor atual
+            cursor.execute("SELECT * FROM listar_inimigos_setor_jogador(%s)", (self.jogador_atual,))
             inimigos = cursor.fetchall()
 
             if not inimigos:
@@ -697,8 +663,8 @@ class JogoStarWars:
 
             print(f"\n{resultado}")
 
-            if resultado.startswith("Sucesso"):
-                print("\n🗡️  COMBATE INICIADO! 🗡️")
+            if resultado.startswith("Combate iniciado"):
+                print("\nCOMBATE INICIADO!")
                 print("Use os comandos de combate para lutar!")
 
         except Exception as erro:
@@ -721,7 +687,7 @@ class JogoStarWars:
             combate_id, tipo_inimigo, vida_jogador, vida_inimigo, turno_atual, turno_numero = status
 
             print("\n" + "="*50)
-            print("🗡️  COMBATE EM ANDAMENTO 🗡️")
+            print("COMBATE EM ANDAMENTO")
             print("="*50)
             print(f"Inimigo: {tipo_inimigo}")
             print(f"Sua vida: {vida_jogador} HP")
@@ -801,17 +767,17 @@ class JogoStarWars:
         cursor = self.conexao.cursor()
 
         try:
-            # Obter localização atual do jogador
-            cursor.execute("SELECT * FROM obter_localizacao_jogador(%s)", (self.jogador_atual,))
-            localizacao = cursor.fetchone()
-
-            if not localizacao:
-                print("Erro: Não foi possível obter sua localização atual.")
-                return
-
-            planeta, cidade, setor, id_setor_atual, tipo_setor, nivel_perigo, descricao_setor = localizacao
-
             while True:
+                # Obter localização atual do jogador (atualizada a cada loop)
+                cursor.execute("SELECT * FROM obter_localizacao_jogador(%s)", (self.jogador_atual,))
+                localizacao = cursor.fetchone()
+
+                if not localizacao:
+                    print("Erro: Não foi possível obter sua localização atual.")
+                    return
+
+                planeta, cidade, setor, id_setor_atual, tipo_setor, nivel_perigo, descricao_setor = localizacao
+
                 print(f"\n=== MAPA - Sua Localização ===")
                 print(f"Planeta: {planeta}")
                 print(f"Cidade: {cidade}")
@@ -962,10 +928,14 @@ class JogoStarWars:
             cursor.execute("SELECT mover_jogador_setor(%s, %s)", (self.jogador_atual, setor_id))
             resultado = cursor.fetchone()[0]
 
+            # COMMIT da transação para persistir a mudança
+            self.conexao.commit()
+
             print(f"\n{resultado}")
 
         except Exception as erro:
             print(f"Erro ao mover para setor: {erro}")
+            self.conexao.rollback()
         finally:
             cursor.close()
 
@@ -1015,9 +985,13 @@ class JogoStarWars:
             cursor.execute("SELECT viajar_para_cidade(%s, %s)", (self.jogador_atual, cidade_id))
             resultado = cursor.fetchone()[0]
 
+            # COMMIT da transação para persistir a mudança
+            self.conexao.commit()
+
             print(f"\n{resultado}")
 
         except Exception as erro:
             print(f"Erro ao viajar para cidade: {erro}")
+            self.conexao.rollback()
         finally:
             cursor.close()

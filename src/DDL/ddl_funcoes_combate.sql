@@ -39,30 +39,35 @@ RETURNS TEXT AS $$
 DECLARE
     jogador_vida INT;
     inimigo_vida INT;
-    inimigo_planeta VARCHAR(20);
-    jogador_planeta VARCHAR(20);
+    jogador_setor INT;
     combate_id INT;
     inimigo_nome VARCHAR(22);
+    inimigo_no_setor BOOLEAN := FALSE;
 BEGIN
     -- Verificar se o jogador existe e obter dados
-    SELECT vida_base, nome_planeta INTO jogador_vida, jogador_planeta
+    SELECT vida_base, id_setor INTO jogador_vida, jogador_setor
     FROM Personagem WHERE id_player = jogador_id;
-    
+
     IF NOT FOUND THEN
         RETURN 'Erro: Jogador nao encontrado';
     END IF;
-    
+
     -- Verificar se o inimigo existe e obter dados
-    SELECT vida_base, planeta_origem, tipo_mob INTO inimigo_vida, inimigo_planeta, inimigo_nome
+    SELECT vida_base, tipo_mob INTO inimigo_vida, inimigo_nome
     FROM Inimigo WHERE id_mob = inimigo_id;
-    
+
     IF NOT FOUND THEN
         RETURN 'Erro: Inimigo nao encontrado';
     END IF;
-    
-    -- Verificar se jogador e inimigo estao no mesmo planeta
-    IF jogador_planeta != inimigo_planeta THEN
-        RETURN 'Erro: Voce nao pode lutar contra este inimigo. Ele nao esta no seu planeta atual';
+
+    -- Verificar se o inimigo esta no setor atual do jogador
+    SELECT EXISTS(
+        SELECT 1 FROM Inimigo_Setor
+        WHERE id_setor = jogador_setor AND id_mob = inimigo_id AND ativo = true
+    ) INTO inimigo_no_setor;
+
+    IF NOT inimigo_no_setor THEN
+        RETURN 'Erro: Voce nao pode lutar contra este inimigo. Ele nao esta no seu setor atual';
     END IF;
     
     -- Verificar se o jogador ja esta em combate
@@ -93,7 +98,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION calcular_dano(atacante_id INT, eh_jogador BOOLEAN)
 RETURNS INT AS $$
 DECLARE
-    dano_base INT := 10;
+    dano_base_jogador INT := 10;
+    dano_base_inimigo INT;
     level_atacante INT;
     classe_atacante VARCHAR(20);
     modificador_classe INT := 0;
@@ -116,7 +122,7 @@ BEGIN
         END CASE;
     ELSE
         -- Obter dados do inimigo
-        SELECT nivel, dano_base INTO level_atacante, dano_base
+        SELECT nivel, dano_base INTO level_atacante, dano_base_inimigo
         FROM Inimigo WHERE id_mob = atacante_id;
         modificador_classe := 0;
     END IF;
@@ -124,10 +130,10 @@ BEGIN
     -- Calculo base do dano (balanceado)
     IF eh_jogador THEN
         -- Jogador: dano base + level*3 + modificador classe
-        dano_final := dano_base + (level_atacante * 3) + modificador_classe;
+        dano_final := dano_base_jogador + (level_atacante * 3) + modificador_classe;
     ELSE
         -- Inimigo: dano base do inimigo + level*2
-        dano_final := dano_base + (level_atacante * 2);
+        dano_final := dano_base_inimigo + (level_atacante * 2);
     END IF;
     
     -- Chance de critico (5%)
