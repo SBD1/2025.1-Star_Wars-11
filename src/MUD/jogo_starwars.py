@@ -74,8 +74,14 @@ class JogoStarWars:
             """, (classe_escolhida, planeta_escolhido))
             
             self.jogador_atual = cursor.fetchone()[0]
+
+            # Desbloquear ataque inicial da classe
+            cursor.execute("SELECT desbloquear_ataques_iniciais(%s)", (self.jogador_atual,))
+            resultado_ataque = cursor.fetchone()[0]
+
             self.conexao.commit()
             print(f"\nPersonagem '{classe_escolhida}' criado em '{planeta_escolhido}' com sucesso! ID: {self.jogador_atual}")
+            print(f"Ataque especial: {resultado_ataque}")
             
         except Exception as erro:
             print(f"Erro ao criar personagem: {erro}")
@@ -157,18 +163,19 @@ class JogoStarWars:
     def mostrar_status(self):
         cursor = self.conexao.cursor()
         cursor.execute("""
-            SELECT nome_classe, nome_planeta, level, vida_base, gcs 
-            FROM Personagem 
+            SELECT nome_classe, nome_planeta, level, vida_atual, vida_base, gcs, mana_atual, mana_base
+            FROM Personagem
             WHERE id_player = %s
         """, (self.jogador_atual,))
-        
+
         status = cursor.fetchone()
         print("\n=== Status do Personagem ===")
         print(f"Classe: {status[0]}")
         print(f"Planeta atual: {status[1]}")
         print(f"Level: {status[2]}")
-        print(f"Vida: {status[3]}")
-        print(f"GCS: {status[4]}")
+        print(f"Vida: {status[3]}/{status[4]}")  # vida_atual/vida_base
+        print(f"Força: {status[6]}/{status[7]}")  # mana_atual/mana_base
+        print(f"GCS: {status[5]}")
         cursor.close()
 
     def deletar_personagem(self):
@@ -618,11 +625,14 @@ class JogoStarWars:
                 return
 
             print("\n=== Inimigos Disponíveis ===")
-            print("ID  | Tipo               | Vida | Nível | Dano | Escudo | Créditos | Ameaça")
-            print("-" * 75)
+            print("ID  | Tipo               | Vida | Nível | Dano | Escudo | Créditos | Categoria")
+            print("-" * 80)
 
             for inimigo in inimigos:
-                print(f"{inimigo[0]:<3} | {inimigo[1]:<17} | {inimigo[2]:<4} | {inimigo[3]:<5} | {inimigo[4]:<4} | {inimigo[5]:<6} | {inimigo[6]:<8} | {inimigo[7]}")
+                # inimigo agora tem 9 campos: id_mob, tipo_mob, vida_base, nivel, dano_base, pontos_escudo, creditos, nivel_ameaca, categoria_mob
+                categoria = inimigo[8] if len(inimigo) > 8 else "Normal"
+                simbolo = {"Normal": "⚔️", "Elite": "🛡️", "Boss": "👑"}.get(categoria, "❓")
+                print(f"{inimigo[0]:<3} | {inimigo[1]:<17} | {inimigo[2]:<4} | {inimigo[3]:<5} | {inimigo[4]:<4} | {inimigo[5]:<6} | {inimigo[6]:<8} | {simbolo} {categoria}")
 
             print("\nEscolha um inimigo para combater ou digite 0 para voltar:")
 
@@ -701,6 +711,7 @@ class JogoStarWars:
                 print("1. Atacar")
                 print("2. Defender")
                 print("3. Fugir")
+                print("4. Ataques Especiais")
 
                 try:
                     escolha = input("\nEscolha sua ação: ").strip()
@@ -711,6 +722,8 @@ class JogoStarWars:
                         self.processar_acao_jogador(combate_id, "defesa")
                     elif escolha == "3":
                         self.processar_acao_jogador(combate_id, "fuga")
+                    elif escolha == "4":
+                        self.menu_ataques_especiais(combate_id)
                     else:
                         print("Ação inválida!")
 
@@ -737,9 +750,92 @@ class JogoStarWars:
             print(f"\n{resultado}")
 
             # Se não fugiu, processar turno do inimigo
-            if not resultado.startswith("Você fugiu") and not "derrotado" in resultado:
+            if not resultado.startswith("Voce fugiu") and not "derrotado" in resultado:
                 input("\nPressione Enter para o turno do inimigo...")
                 self.processar_turno_inimigo(combate_id)
+            elif resultado.startswith("Voce fugiu"):
+                # Se fugiu com sucesso, apenas aguardar confirmação
+                input("\nPressione Enter para continuar...")
+                return  # Sair da função sem processar turno do inimigo
+
+        except Exception as erro:
+            print(f"Erro ao processar ação do jogador: {erro}")
+        finally:
+            cursor.close()
+
+    def menu_ataques_especiais(self, combate_id):
+        """Menu para escolher ataques especiais"""
+        cursor = self.conexao.cursor()
+        try:
+            # Listar ataques especiais disponíveis
+            cursor.execute("SELECT * FROM listar_ataques_jogador(%s)", (self.jogador_atual,))
+            ataques = cursor.fetchall()
+
+            if not ataques:
+                print("\nVocê não possui ataques especiais disponíveis!")
+                input("Pressione Enter para voltar...")
+                return
+
+            print("\n=== ATAQUES ESPECIAIS ===")
+            print("ID  | Nome                    | Dano | Força| Tipo        | Efeito")
+            print("-" * 75)
+
+            for ataque in ataques:
+                id_ataque, nome, descricao, dano, mana, tipo_ataque, efeito = ataque
+                print(f"{id_ataque:<3} | {nome:<22} | {dano:<4} | {mana:<4} | {tipo_ataque:<10} | {efeito[:20]}...")
+
+            print("0   | Voltar")
+
+            try:
+                escolha = input("\nEscolha um ataque especial: ").strip()
+
+                if escolha == "0":
+                    return
+
+                ataque_id = int(escolha)
+
+                # Verificar se o ataque existe na lista
+                ataque_escolhido = None
+                for ataque in ataques:
+                    if ataque[0] == ataque_id:
+                        ataque_escolhido = ataque
+                        break
+
+                if ataque_escolhido:
+                    self.processar_acao_jogador_especial(combate_id, "ataque_especial", ataque_id)
+                else:
+                    print("Ataque especial inválido!")
+
+            except ValueError:
+                print("Entrada inválida!")
+
+        except Exception as erro:
+            print(f"Erro ao listar ataques especiais: {erro}")
+        finally:
+            cursor.close()
+
+    def processar_acao_jogador_especial(self, combate_id, acao, ataque_id=None):
+        """Processa ação do jogador com ataque especial"""
+        cursor = self.conexao.cursor()
+        try:
+            if ataque_id:
+                cursor.execute("SELECT processar_turno_jogador(%s, %s, %s)", (combate_id, acao, ataque_id))
+            else:
+                cursor.execute("SELECT processar_turno_jogador(%s, %s)", (combate_id, acao))
+
+            resultado = cursor.fetchone()[0]
+            self.conexao.commit()
+
+            print(f"\n{resultado}")
+
+            # Se não fugiu, processar turno do inimigo
+            if not resultado.startswith("Voce fugiu") and not "derrotado" in resultado:
+                input("\nPressione Enter para o turno do inimigo...")
+                self.processar_turno_inimigo(combate_id)
+            elif resultado.startswith("Voce fugiu"):
+                # Se fugiu com sucesso, apenas aguardar confirmação
+                input("\nPressione Enter para continuar...")
+                return  # Sair da função sem processar turno do inimigo
 
         except Exception as erro:
             print(f"Erro ao processar ação do jogador: {erro}")
