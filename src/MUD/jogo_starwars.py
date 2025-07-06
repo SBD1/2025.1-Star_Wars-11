@@ -157,18 +157,18 @@ class JogoStarWars:
     def mostrar_status(self):
         cursor = self.conexao.cursor()
         cursor.execute("""
-            SELECT nome_classe, nome_planeta, level, vida_base, gcs 
-            FROM Personagem 
+            SELECT nome_classe, nome_planeta, level, vida_atual, vida_base, gcs
+            FROM Personagem
             WHERE id_player = %s
         """, (self.jogador_atual,))
-        
+
         status = cursor.fetchone()
         print("\n=== Status do Personagem ===")
         print(f"Classe: {status[0]}")
         print(f"Planeta atual: {status[1]}")
         print(f"Level: {status[2]}")
-        print(f"Vida: {status[3]}")
-        print(f"GCS: {status[4]}")
+        print(f"Vida: {status[3]}/{status[4]}")  # vida_atual/vida_base
+        print(f"GCS: {status[5]}")
         cursor.close()
 
     def deletar_personagem(self):
@@ -737,9 +737,13 @@ class JogoStarWars:
             print(f"\n{resultado}")
 
             # Se não fugiu, processar turno do inimigo
-            if not resultado.startswith("Você fugiu") and not "derrotado" in resultado:
+            if not resultado.startswith("Voce fugiu") and not "derrotado" in resultado:
                 input("\nPressione Enter para o turno do inimigo...")
                 self.processar_turno_inimigo(combate_id)
+            elif resultado.startswith("Voce fugiu"):
+                # Se fugiu com sucesso, apenas aguardar confirmação
+                input("\nPressione Enter para continuar...")
+                return  # Sair da função sem processar turno do inimigo
 
         except Exception as erro:
             print(f"Erro ao processar ação do jogador: {erro}")
