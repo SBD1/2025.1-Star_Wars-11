@@ -174,7 +174,7 @@ class JogoStarWars:
         print(f"Planeta atual: {status[1]}")
         print(f"Level: {status[2]}")
         print(f"Vida: {status[3]}/{status[4]}")  # vida_atual/vida_base
-        print(f"Mana: {status[6]}/{status[7]}")  # mana_atual/mana_base
+        print(f"Força: {status[6]}/{status[7]}")  # mana_atual/mana_base
         print(f"GCS: {status[5]}")
         cursor.close()
 
@@ -774,7 +774,7 @@ class JogoStarWars:
                 return
 
             print("\n=== ATAQUES ESPECIAIS ===")
-            print("ID  | Nome                    | Dano | Mana | Tipo        | Efeito")
+            print("ID  | Nome                    | Dano | Força| Tipo        | Efeito")
             print("-" * 75)
 
             for ataque in ataques:
