@@ -12,10 +12,10 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cfeeefe37d20'
-down_revision: Union[str, None] = '034'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision = '035'
+down_revision = '034'
+branch_labels = None
+depends_on = None
 
 
 def upgrade() -> None:
