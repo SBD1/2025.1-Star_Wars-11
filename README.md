@@ -4,6 +4,16 @@
 
 Repositório para desenvolvimento do jogo Star Wars da disciplina de SBD1 - 2025.1
 
+## Sumário
+
+- [Sobre o Jogo](#sobre-o-jogo)
+- [Pré-requisitos](#pré-requisitos)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Módulos do Projeto](#módulos-do-projeto)
+- [Documentação Online](#documentação-online)
+- [Histórico de Versões](#histórico-de-versões)
+
+
 # Sobre o Jogo:
 
 O jogo é ambientado no universo de Star Wars e segue o estilo MUD, com interações baseadas em texto. O jogador cria um personagem, escolhendo uma classe (como Jedi, Sith ou Caçador de Recompensas), e inicia sua jornada em um planeta dentro de um sistema estelar. Ao longo da aventura, pode aceitar missões, viajar entre planetas usando diferentes tipos de naves e coletar itens como armas, armaduras e artefatos.
@@ -43,7 +53,7 @@ cd 2025.1-Star_Wars-11
 
 2. **Inicie os containers**
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 3. Instalando Pacotes Python 
@@ -135,7 +145,7 @@ Implementação física do banco e desenvolvimento do jogo:
 - **Migrações**: Controle de versão do banco de dados
 - **Jogo MUD**: Aplicação inicial com interface de texto
 
-## 🌐 Documentação Online
+## Documentação Online
 
 Acesse nossa documentação completa em: [Star Wars MUD - Documentação](https://sbd1.github.io/2025.1-Star_Wars-11/)
 
