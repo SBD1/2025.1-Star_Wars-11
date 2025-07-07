@@ -1,3 +1,5 @@
+# versao 1.0.1 - com aplicaçao rodando 
+
 import psycopg2
 import time
 from MUD.jogo_starwars import JogoStarWars
