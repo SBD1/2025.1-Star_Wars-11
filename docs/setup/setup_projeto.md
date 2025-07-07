@@ -51,6 +51,12 @@ Para remover também os volumes:
 docker-compose down -v
 ```
 
+### 3.4. Instalando Pacotes Python 
+
+```bash
+pip install -r requirements.txt
+```
+
 ## 4. Conexão com o Banco de Dados
 
 ### 4.1. Via PgAdmin
