@@ -46,6 +46,18 @@
 - Instruções específicas para reset do banco
 - Diferenciação entre `docker-compose down` e `docker-compose down -v`
 
+## 5. Migrações de Banco de Dados com Alembic
+
+### Problema
+- Necessidade de manter o esquema do banco de dados atualizado conforme alterações no modelo
+- Esquecimento ou falha ao aplicar migrações causava inconsistências e erros na aplicação
+- Ambiente em containers dificultava a sincronização correta após mudanças no banco
+
+### Solução
+- Uso do comando `python -m alembic upgrade head` para aplicar sempre as migrações pendentes após alterações
+- Rotina de derrubar os containers (`docker-compose down`) e subir novamente (`docker-compose up`) para garantir que o banco esteja sincronizado com a última versão do esquema
+- Documentação da prática para que toda a equipe siga o processo corretamente
+
 ## Aprendizados
 
 1. **Importância da Ordem**: A sequência de criação de tabelas é crucial em bancos relacionais

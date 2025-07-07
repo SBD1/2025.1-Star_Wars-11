@@ -30,6 +30,7 @@ Todo o funcionamento do jogo é estruturado em um banco de dados relacional que 
 
 - [Docker](https://www.docker.com/get-started)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+- [Python](https://www.python.org/)
 - [PgAdmin4](https://www.pgadmin.org/download/) (opcional)
 
 ### Passo a Passo
@@ -43,6 +44,12 @@ cd 2025.1-Star_Wars-11
 2. **Inicie os containers**
 ```bash
 docker-compose up -d
+```
+
+3. Instalando Pacotes Python 
+
+```bash
+pip install -r requirements.txt
 ```
 
 3. **Conecte ao banco via PgAdmin**
