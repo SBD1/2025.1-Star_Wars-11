@@ -1,3 +1,6 @@
+import psycopg2
+from datetime import datetime
+
 class JogoStarWars:
     def __init__(self, conexao):
         self.conexao = conexao
@@ -44,7 +47,6 @@ class JogoStarWars:
         elif escolha == "4":
             exit()
 
-
     def criar_personagem(self):
         cursor = self.conexao.cursor()
         print("\n=== Criação de Personagem ===")
@@ -88,7 +90,6 @@ class JogoStarWars:
             self.conexao.rollback()
 
         cursor.close()
-
 
     def carregar_personagem(self):
         cursor = self.conexao.cursor()
@@ -139,11 +140,12 @@ class JogoStarWars:
             print("3. viajar - Viajar para outro planeta")
             print("4. missoes - Ver missões disponíveis")
             print("5. combate - Iniciar combate")
-            print("6. sair - Sair do jogo")
+            print("6. npcs - Interagir com NPCs")  # NOVA OPÇÃO
+            print("7. sair - Sair do jogo")
 
             comando = input("\n> ").lower().strip()
 
-            if comando == "6":
+            if comando == "7":
                 self.jogador_atual = None
                 print("\nSessão encerrada. Voltando para o menu principal...")
                 break
@@ -157,6 +159,8 @@ class JogoStarWars:
                 self.menu_missoes()
             elif comando == "5":
                 self.menu_combate()
+            elif comando == "6":
+                self.menu_npcs()  # NOVA FUNCIONALIDADE
             else:
                 print("Comando não reconhecido!")
 
@@ -187,7 +191,6 @@ class JogoStarWars:
         for personagem in personagens:
             print(f"ID: {personagem[0]}, Classe: {personagem[1]}, Planeta: {personagem[2]}")
 
-
         id_jogador = input("\nDigite o ID do personagem que deseja deletar: ")
         cursor = self.conexao.cursor()
         
@@ -211,6 +214,567 @@ class JogoStarWars:
             self.conexao.rollback()
         
         cursor.close()
+
+    # =====================================================
+    # SISTEMA DE NPCs - NOVA IMPLEMENTAÇÃO
+    # =====================================================
+
+    def menu_npcs(self):
+        """Menu principal para interação com NPCs"""
+        cursor = self.conexao.cursor()
+        try:
+            # Obter planeta atual do jogador
+            cursor.execute("SELECT nome_planeta FROM Personagem WHERE id_player = %s", (self.jogador_atual,))
+            planeta_atual = cursor.fetchone()
+            
+            if not planeta_atual:
+                print("Erro: Não foi possível determinar sua localização.")
+                return
+            
+            planeta_atual = planeta_atual[0]
+            
+            while True:
+                print(f"\n=== NPCs em {planeta_atual} ===")
+                
+                # Listar NPCs disponíveis no planeta
+                npcs_disponiveis = self.listar_npcs_planeta(planeta_atual)
+                
+                if not npcs_disponiveis:
+                    print("Não há NPCs disponíveis neste planeta.")
+                    input("Pressione Enter para continuar...")
+                    break
+                
+                print("\nOpções:")
+                print("1. Interagir com Mercante")
+                print("2. Interagir com Mecânico")
+                print("3. Ver todos os NPCs")
+                print("4. Voltar")
+                
+                escolha = input("\nEscolha uma opção: ").strip()
+                
+                if escolha == "4":
+                    break
+                elif escolha == "1":
+                    self.interagir_mercante(planeta_atual)
+                elif escolha == "2":
+                    self.interagir_mecanico(planeta_atual)
+                elif escolha == "3":
+                    self.mostrar_todos_npcs(planeta_atual)
+                else:
+                    print("Opção inválida!")
+                    
+        except Exception as erro:
+            print(f"Erro no menu de NPCs: {erro}")
+        finally:
+            cursor.close()
+
+    def listar_npcs_planeta(self, planeta):
+        """Lista todos os NPCs disponíveis no planeta"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("""
+                SELECT 
+                    n.id_NPC,
+                    n.nome_planeta,
+                    m.Itens_Disponiveis,
+                    me.Servicos_disponiveis,
+                    CASE 
+                        WHEN m.id_NPC IS NOT NULL THEN 'Mercante'
+                        WHEN me.id_NPC IS NOT NULL THEN 'Mecânico'
+                        ELSE 'Outro NPC'
+                    END AS tipo_npc
+                FROM Npc n
+                LEFT JOIN Mercante m ON n.id_NPC = m.id_NPC
+                LEFT JOIN Mecanico me ON n.id_NPC = me.id_NPC
+                WHERE n.nome_planeta = %s
+                ORDER BY n.id_NPC
+            """, (planeta,))
+            
+            return cursor.fetchall()
+            
+        except Exception as erro:
+            print(f"Erro ao listar NPCs: {erro}")
+            return []
+        finally:
+            cursor.close()
+
+    def mostrar_todos_npcs(self, planeta):
+        """Mostra informações detalhadas de todos os NPCs do planeta"""
+        npcs = self.listar_npcs_planeta(planeta)
+        
+        if not npcs:
+            print("Nenhum NPC encontrado neste planeta.")
+            return
+        
+        print(f"\n=== Todos os NPCs em {planeta} ===")
+        print("ID  | Tipo      | Serviços/Itens Disponíveis")
+        print("-" * 50)
+        
+        for npc in npcs:
+            id_npc, _, itens, servicos, tipo = npc
+            disponivel = itens if itens else servicos if servicos else "N/A"
+            print(f"{id_npc:<3} | {tipo:<9} | {disponivel}")
+        
+        input("\nPressione Enter para continuar...")
+
+    def interagir_mercante(self, planeta):
+        """Interação específica com mercantes"""
+        cursor = self.conexao.cursor()
+        try:
+            # Buscar mercantes no planeta
+            cursor.execute("""
+                SELECT n.id_NPC, m.Itens_Disponiveis
+                FROM Npc n
+                JOIN Mercante m ON n.id_NPC = m.id_NPC
+                WHERE n.nome_planeta = %s
+            """, (planeta,))
+            
+            mercantes = cursor.fetchall()
+            
+            if not mercantes:
+                print(f"Não há mercantes disponíveis em {planeta}.")
+                input("Pressione Enter para continuar...")
+                return
+            
+            print(f"\n=== Mercantes em {planeta} ===")
+            for i, mercante in enumerate(mercantes, 1):
+                id_npc, itens = mercante
+                print(f"{i}. Mercante #{id_npc} - Itens: {itens}")
+            
+            if len(mercantes) == 1:
+                mercante_escolhido = mercantes[0]
+                print(f"\nInteragindo com Mercante #{mercante_escolhido[0]}...")
+            else:
+                try:
+                    escolha = int(input("\nEscolha um mercante (número): ")) - 1
+                    if 0 <= escolha < len(mercantes):
+                        mercante_escolhido = mercantes[escolha]
+                    else:
+                        print("Escolha inválida!")
+                        return
+                except ValueError:
+                    print("Entrada inválida!")
+                    return
+            
+            self.menu_mercante(mercante_escolhido)
+            
+        except Exception as erro:
+            print(f"Erro ao interagir com mercante: {erro}")
+        finally:
+            cursor.close()
+
+    def menu_mercante(self, mercante_info):
+        """Menu de interação com um mercante específico"""
+        id_npc, itens_disponiveis = mercante_info
+        
+        while True:
+            print(f"\n=== Mercante #{id_npc} ===")
+            print(f"Itens disponíveis: {itens_disponiveis}")
+            print("\nOpções:")
+            print("1. Comprar itens")
+            print("2. Vender itens")
+            print("3. Ver inventário")
+            print("4. Sair")
+            
+            escolha = input("\nO que deseja fazer? ").strip()
+            
+            if escolha == "4":
+                print("Até logo!")
+                break
+            elif escolha == "1":
+                self.comprar_itens(id_npc, itens_disponiveis)
+            elif escolha == "2":
+                self.vender_itens(id_npc)
+            elif escolha == "3":
+                self.ver_inventario_jogador()
+            else:
+                print("Opção inválida!")
+
+    def comprar_itens(self, id_npc, itens_disponiveis):
+        """Simula compra de itens do mercante"""
+        cursor = self.conexao.cursor()
+        try:
+            # Obter GCS atual do jogador
+            cursor.execute("SELECT gcs FROM Personagem WHERE id_player = %s", (self.jogador_atual,))
+            gcs_atual = cursor.fetchone()[0]
+            
+            print(f"\n=== Loja do Mercante #{id_npc} ===")
+            print(f"Seus GCS: {gcs_atual}")
+            print(f"Categorias disponíveis: {itens_disponiveis}")
+            
+            # Simular itens baseados nas categorias
+            itens_loja = self.gerar_itens_loja(itens_disponiveis)
+            
+            if not itens_loja:
+                print("Este mercante não tem itens disponíveis no momento.")
+                return
+            
+            print("\nItens à venda:")
+            for i, item in enumerate(itens_loja, 1):
+                nome, preco, descricao = item
+                print(f"{i}. {nome} - {preco} GCS ({descricao})")
+            
+            try:
+                escolha = int(input("\nEscolha um item para comprar (0 para cancelar): "))
+                
+                if escolha == 0:
+                    return
+                
+                if 1 <= escolha <= len(itens_loja):
+                    item_escolhido = itens_loja[escolha - 1]
+                    nome, preco, descricao = item_escolhido
+                    
+                    if gcs_atual >= preco:
+                        # Simular compra
+                        cursor.execute("""
+                            UPDATE Personagem 
+                            SET gcs = gcs - %s 
+                            WHERE id_player = %s
+                        """, (preco, self.jogador_atual))
+                        
+                        self.conexao.commit()
+                        print(f"\nVocê comprou {nome} por {preco} GCS!")
+                        print(f"GCS restantes: {gcs_atual - preco}")
+                        
+                        # Aqui você poderia adicionar o item ao inventário do jogador
+                        # se tivesse uma tabela de inventário implementada
+                        
+                    else:
+                        print(f"\nGCS insuficientes! Você precisa de {preco} GCS, mas tem apenas {gcs_atual}.")
+                else:
+                    print("Item inválido!")
+                    
+            except ValueError:
+                print("Entrada inválida!")
+                
+        except Exception as erro:
+            print(f"Erro ao comprar item: {erro}")
+            self.conexao.rollback()
+        finally:
+            cursor.close()
+
+    def gerar_itens_loja(self, categorias):
+        """Gera itens baseados nas categorias disponíveis"""
+        itens_por_categoria = {
+            "Armas": [
+                ("Blaster DL-44", 500, "Pistola blaster confiável"),
+                ("Rifle E-11", 800, "Rifle de assalto imperial"),
+                ("Sabre de Luz", 2000, "Arma dos Jedi")
+            ],
+            "Armaduras": [
+                ("Armadura de Couro", 300, "Proteção básica"),
+                ("Armadura de Combate", 600, "Proteção militar"),
+                ("Armadura Mandaloriana", 1500, "Proteção superior")
+            ],
+            "Consumiveis": [
+                ("Medpac", 50, "Restaura 50 HP"),
+                ("Estimulante", 100, "Aumenta dano temporariamente"),
+                ("Ração de Campo", 25, "Comida nutritiva")
+            ],
+            "Ferramentas": [
+                ("Kit de Reparo", 200, "Para manutenção de equipamentos"),
+                ("Scanner", 400, "Detecta inimigos próximos"),
+                ("Datapad", 150, "Dispositivo de comunicação")
+            ]
+        }
+        
+        itens_disponiveis = []
+        categorias_lista = [cat.strip() for cat in categorias.split(',')]
+        
+        for categoria in categorias_lista:
+            if categoria in itens_por_categoria:
+                itens_disponiveis.extend(itens_por_categoria[categoria])
+        
+        return itens_disponiveis
+
+    def vender_itens(self, id_npc):
+        """Simula venda de itens para o mercante"""
+        print(f"\n=== Vender para Mercante #{id_npc} ===")
+        print("Sistema de inventário não implementado ainda.")
+        print("Em uma versão completa, aqui você poderia vender itens do seu inventário.")
+        input("Pressione Enter para continuar...")
+
+    def ver_inventario_jogador(self):
+        """Mostra o inventário do jogador"""
+        print("\n=== Seu Inventário ===")
+        print("Sistema de inventário não implementado ainda.")
+        print("Em uma versão completa, aqui seriam listados seus itens.")
+        input("Pressione Enter para continuar...")
+
+    def interagir_mecanico(self, planeta):
+        """Interação específica com mecânicos"""
+        cursor = self.conexao.cursor()
+        try:
+            # Buscar mecânicos no planeta
+            cursor.execute("""
+                SELECT n.id_NPC, me.Servicos_disponiveis
+                FROM Npc n
+                JOIN Mecanico me ON n.id_NPC = me.id_NPC
+                WHERE n.nome_planeta = %s
+            """, (planeta,))
+            
+            mecanicos = cursor.fetchall()
+            
+            if not mecanicos:
+                print(f"Não há mecânicos disponíveis em {planeta}.")
+                input("Pressione Enter para continuar...")
+                return
+            
+            print(f"\n=== Mecânicos em {planeta} ===")
+            for i, mecanico in enumerate(mecanicos, 1):
+                id_npc, servicos = mecanico
+                print(f"{i}. Mecânico #{id_npc} - Serviços: {servicos}")
+            
+            if len(mecanicos) == 1:
+                mecanico_escolhido = mecanicos[0]
+                print(f"\nInteragindo com Mecânico #{mecanico_escolhido[0]}...")
+            else:
+                try:
+                    escolha = int(input("\nEscolha um mecânico (número): ")) - 1
+                    if 0 <= escolha < len(mecanicos):
+                        mecanico_escolhido = mecanicos[escolha]
+                    else:
+                        print("Escolha inválida!")
+                        return
+                except ValueError:
+                    print("Entrada inválida!")
+                    return
+            
+            self.menu_mecanico(mecanico_escolhido)
+            
+        except Exception as erro:
+            print(f"Erro ao interagir com mecânico: {erro}")
+        finally:
+            cursor.close()
+
+    def menu_mecanico(self, mecanico_info):
+        """Menu de interação com um mecânico específico"""
+        id_npc, servicos_disponiveis = mecanico_info
+        
+        while True:
+            print(f"\n=== Mecânico #{id_npc} ===")
+            print(f"Serviços disponíveis: {servicos_disponiveis}")
+            print("\nOpções:")
+            print("1. Reparar equipamentos")
+            print("2. Fazer upgrade")
+            print("3. Customizar nave")
+            print("4. Ver suas naves")
+            print("5. Sair")
+            
+            escolha = input("\nO que deseja fazer? ").strip()
+            
+            if escolha == "5":
+                print("Até logo!")
+                break
+            elif escolha == "1":
+                self.reparar_equipamentos(id_npc)
+            elif escolha == "2":
+                self.fazer_upgrade(id_npc)
+            elif escolha == "3":
+                self.customizar_nave(id_npc)
+            elif escolha == "4":
+                self.ver_naves_jogador()
+            else:
+                print("Opção inválida!")
+
+    def reparar_equipamentos(self, id_npc):
+        """Simula reparo de equipamentos"""
+        cursor = self.conexao.cursor()
+        try:
+            # Verificar vida atual do jogador
+            cursor.execute("""
+                SELECT vida_atual, vida_base, gcs 
+                FROM Personagem 
+                WHERE id_player = %s
+            """, (self.jogador_atual,))
+            
+            dados = cursor.fetchone()
+            vida_atual, vida_base, gcs = dados
+            
+            print(f"\n=== Serviços de Reparo ===")
+            print(f"Sua vida atual: {vida_atual}/{vida_base}")
+            print(f"Seus GCS: {gcs}")
+            
+            if vida_atual >= vida_base:
+                print("Seus equipamentos estão em perfeito estado!")
+                input("Pressione Enter para continuar...")
+                return
+            
+            vida_perdida = vida_base - vida_atual
+            custo_reparo = vida_perdida * 10  # 10 GCS por ponto de vida
+            
+            print(f"\nCusto do reparo completo: {custo_reparo} GCS")
+            
+            if gcs < custo_reparo:
+                print("Você não tem GCS suficientes para o reparo completo.")
+                # Oferecer reparo parcial
+                reparo_possivel = gcs // 10
+                if reparo_possivel > 0:
+                    print(f"Posso reparar {reparo_possivel} pontos de vida por {reparo_possivel * 10} GCS.")
+                    confirmar = input("Deseja fazer o reparo parcial? (s/n): ").lower().strip()
+                    if confirmar == 's':
+                        cursor.execute("""
+                            UPDATE Personagem 
+                            SET vida_atual = vida_atual + %s, gcs = gcs - %s
+                            WHERE id_player = %s
+                        """, (reparo_possivel, reparo_possivel * 10, self.jogador_atual))
+                        self.conexao.commit()
+                        print(f"Reparo parcial concluído! +{reparo_possivel} HP")
+                else:
+                    print("Você precisa de pelo menos 10 GCS para qualquer reparo.")
+            else:
+                confirmar = input("Deseja fazer o reparo completo? (s/n): ").lower().strip()
+                if confirmar == 's':
+                    cursor.execute("""
+                        UPDATE Personagem 
+                        SET vida_atual = vida_base, gcs = gcs - %s
+                        WHERE id_player = %s
+                    """, (custo_reparo, self.jogador_atual))
+                    self.conexao.commit()
+                    print("Reparo completo concluído! Vida restaurada ao máximo!")
+            
+            input("Pressione Enter para continuar...")
+            
+        except Exception as erro:
+            print(f"Erro ao reparar equipamentos: {erro}")
+            self.conexao.rollback()
+        finally:
+            cursor.close()
+
+    def fazer_upgrade(self, id_npc):
+        """Simula upgrade de equipamentos"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("""
+                SELECT level, gcs, vida_base, dano_base 
+                FROM Personagem 
+                WHERE id_player = %s
+            """, (self.jogador_atual,))
+            
+            dados = cursor.fetchone()
+            level, gcs, vida_base, dano_base = dados
+            
+            print(f"\n=== Serviços de Upgrade ===")
+            print(f"Level atual: {level}")
+            print(f"Vida base: {vida_base}")
+            print(f"Dano base: {dano_base}")
+            print(f"GCS disponíveis: {gcs}")
+            
+            upgrades_disponiveis = [
+                ("Upgrade de Vida", vida_base * 5, f"Aumenta vida base em 10 (atual: {vida_base})"),
+                ("Upgrade de Dano", dano_base * 8, f"Aumenta dano base em 5 (atual: {dano_base})"),
+                ("Upgrade de Equipamento", level * 100, f"Melhora geral dos equipamentos")
+            ]
+            
+            print("\nUpgrades disponíveis:")
+            for i, upgrade in enumerate(upgrades_disponiveis, 1):
+                nome, preco, descricao = upgrade
+                print(f"{i}. {nome} - {preco} GCS ({descricao})")
+            
+            try:
+                escolha = int(input("\nEscolha um upgrade (0 para cancelar): "))
+                
+                if escolha == 0:
+                    return
+                
+                if 1 <= escolha <= len(upgrades_disponiveis):
+                    upgrade_escolhido = upgrades_disponiveis[escolha - 1]
+                    nome, preco, descricao = upgrade_escolhido
+                    
+                    if gcs >= preco:
+                        confirmar = input(f"Confirma o upgrade '{nome}' por {preco} GCS? (s/n): ").lower().strip()
+                        if confirmar == 's':
+                            # Aplicar upgrade
+                            if escolha == 1:  # Upgrade de Vida
+                                cursor.execute("""
+                                    UPDATE Personagem 
+                                    SET vida_base = vida_base + 10, vida_atual = vida_atual + 10, gcs = gcs - %s
+                                    WHERE id_player = %s
+                                """, (preco, self.jogador_atual))
+                            elif escolha == 2:  # Upgrade de Dano
+                                cursor.execute("""
+                                    UPDATE Personagem 
+                                    SET dano_base = dano_base + 5, gcs = gcs - %s
+                                    WHERE id_player = %s
+                                """, (preco, self.jogador_atual))
+                            elif escolha == 3:  # Upgrade Geral
+                                cursor.execute("""
+                                    UPDATE Personagem 
+                                    SET vida_base = vida_base + 5, dano_base = dano_base + 2, gcs = gcs - %s
+                                    WHERE id_player = %s
+                                """, (preco, self.jogador_atual))
+                            
+                            self.conexao.commit()
+                            print(f"Upgrade '{nome}' aplicado com sucesso!")
+                    else:
+                        print(f"GCS insuficientes! Você precisa de {preco} GCS.")
+                else:
+                    print("Upgrade inválido!")
+                    
+            except ValueError:
+                print("Entrada inválida!")
+            
+            input("Pressione Enter para continuar...")
+            
+        except Exception as erro:
+            print(f"Erro ao fazer upgrade: {erro}")
+            self.conexao.rollback()
+        finally:
+            cursor.close()
+
+    def customizar_nave(self, id_npc):
+        """Simula customização de naves"""
+        print(f"\n=== Customização de Naves ===")
+        print("Serviço de customização em desenvolvimento.")
+        print("Em uma versão completa, aqui você poderia:")
+        print("- Pintar sua nave")
+        print("- Instalar novos sistemas")
+        print("- Melhorar velocidade e capacidade")
+        input("Pressione Enter para continuar...")
+
+    def ver_naves_jogador(self):
+        """Mostra as naves do jogador"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("""
+                SELECT 
+                    n.modelo, n.velocidade, n.capacidade,
+                    CASE 
+                        WHEN x.modelo IS NOT NULL THEN 'X-WING T-65'
+                        WHEN y.modelo IS NOT NULL THEN 'YT-1300'
+                        WHEN l.modelo IS NOT NULL THEN 'Lambda Shuttle'
+                        WHEN f.modelo IS NOT NULL THEN 'Fregata CR90'
+                    END as tipo_nave
+                FROM Nave n
+                LEFT JOIN X_WING_T65 x ON n.modelo = x.modelo
+                LEFT JOIN YT_1300 y ON n.modelo = y.modelo
+                LEFT JOIN Lambda_Class_Shuttle l ON n.modelo = l.modelo
+                LEFT JOIN Fregata_Corelliana_CR90 f ON n.modelo = f.modelo
+                WHERE n.Id_Player = %s
+            """, (self.jogador_atual,))
+            
+            naves = cursor.fetchall()
+            
+            if not naves:
+                print("\n=== Suas Naves ===")
+                print("Você não possui nenhuma nave.")
+            else:
+                print("\n=== Suas Naves ===")
+                print("Modelo          | Tipo            | Velocidade | Capacidade")
+                print("-" * 60)
+                for nave in naves:
+                    print(f"{nave[0]:<13} | {nave[3]:<14} | {nave[1]:<10} | {nave[2]}")
+            
+            input("Pressione Enter para continuar...")
+            
+        except Exception as erro:
+            print(f"Erro ao listar naves: {erro}")
+        finally:
+            cursor.close()
+
+    # =====================================================
+    # RESTO DO CÓDIGO ORIGINAL (sem alterações)
+    # =====================================================
 
     def menu_viagem(self):
         # 1. Abrindo o cursor manualmente no início
@@ -1221,6 +1785,29 @@ class JogoStarWars:
             cursor.close()
 
 
+# Função principal para conectar ao banco e iniciar o jogo
+def main():
+    try:
+        # Configurações de conexão com o banco de dados
+        conexao = psycopg2.connect(
+            host="localhost",
+            database="star_wars_mud",
+            user="seu_usuario",
+            password="sua_senha"
+        )
+        
+        # Iniciar o jogo
+        jogo = JogoStarWars(conexao)
+        jogo.iniciar()
+        
+    except psycopg2.Error as erro:
+        print(f"Erro ao conectar ao banco de dados: {erro}")
+    except KeyboardInterrupt:
+        print("\n\nJogo encerrado pelo usuário.")
+    finally:
+        if 'conexao' in locals():
+            conexao.close()
+            print("Conexão com o banco de dados encerrada.")
+
 if __name__ == "__main__":
-    jogo = JogoStarWars()
-    jogo.iniciar()
+    main()
