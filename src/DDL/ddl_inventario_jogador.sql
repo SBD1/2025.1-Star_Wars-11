@@ -9,7 +9,7 @@ CREATE TABLE Inventario (
 
 
 CREATE TABLE Item (
-    id_item INT PRIMARY KEY,
+    id_item SERIAL PRIMARY KEY,
     nome VARCHAR(50) NOT NULL,
     Peso INT NOT NULL,
     tipo VARCHAR(20) NOT NULL,

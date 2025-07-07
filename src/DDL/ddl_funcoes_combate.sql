@@ -1,3 +1,11 @@
+DROP FUNCTION IF EXISTS listar_inimigos_planeta(INT);
+DROP FUNCTION IF EXISTS iniciar_combate(INT, INT);
+DROP FUNCTION IF EXISTS calcular_dano(INT, BOOLEAN);
+DROP FUNCTION IF EXISTS processar_turno_jogador(INT, VARCHAR);
+DROP FUNCTION IF EXISTS processar_turno_inimigo(INT);
+DROP FUNCTION IF EXISTS finalizar_combate(INT, VARCHAR);
+DROP FUNCTION IF EXISTS obter_status_combate(INT);
+
 -- =====================================================
 -- Procedures Sistema de Combate - Star Wars MUD
 -- =====================================================

@@ -1,3 +1,5 @@
+import psycopg2
+
 class JogoStarWars:
     def __init__(self, conexao):
         self.conexao = conexao
@@ -139,11 +141,12 @@ class JogoStarWars:
             print("3. viajar - Viajar para outro planeta")
             print("4. missoes - Ver missões disponíveis")
             print("5. combate - Iniciar combate")
-            print("6. sair - Sair do jogo")
+            print("6. inventario - Abrir seu inventário")
+            print("7. sair - Sair do jogo")
 
             comando = input("\n> ").lower().strip()
 
-            if comando == "6":
+            if comando == "7":
                 self.jogador_atual = None
                 print("\nSessão encerrada. Voltando para o menu principal...")
                 break
@@ -157,6 +160,8 @@ class JogoStarWars:
                 self.menu_missoes()
             elif comando == "5":
                 self.menu_combate()
+            elif comando == "6":
+                self.menu_inventario()
             else:
                 print("Comando não reconhecido!")
 
@@ -324,17 +329,26 @@ class JogoStarWars:
         """Menu principal de missões"""
         while True:
             print("\n=== Sistema de Missões ===")
-            print("1. Missões Mundo")
-            print("2. Missões de Boss")
-            print("3. Voltar")
+            print("1. Ver missões disponíveis")
+            print("2. Ver minhas missões")
+            print("3. Aceitar missão")
+            print("4. Concluir missão")
+            print("5. Abandonar missão")
+            print("6. Voltar")
 
             escolha = input("\nEscolha uma opção: ").strip()
 
             if escolha == "1":
-                self.menu_missoes_mundo()
+                self.listar_missoes_disponiveis()
             elif escolha == "2":
-                self.menu_missoes_boss()
+                self.listar_minhas_missoes()
             elif escolha == "3":
+                self.aceitar_missao()
+            elif escolha == "4":
+                self.concluir_missao()
+            elif escolha == "5":
+                self.abandonar_missao()
+            elif escolha == "6":
                 break
             else:
                 print("Opção inválida!")
@@ -1082,145 +1096,77 @@ class JogoStarWars:
             self.conexao.rollback()
         finally:
             cursor.close()
-
-    def menu_missoes_mundo(self):
-        """Menu de missões mundo (placeholder - toda lógica no banco)"""
-        print("\n=== Missões Mundo ===")
-        print("Sistema de missões mundo em desenvolvimento...")
-        print("Toda lógica será implementada no banco de dados.")
-        input("Pressione Enter para continuar...")
-
-    def menu_missoes_boss(self):
-        """Menu de missões de boss"""
-        cursor = self.conexao.cursor()
-        try:
-            while True:
-                print("\n=== Missões de Boss ===")
-                print("1. Ver missões disponíveis")
-                print("2. Ver missões ativas")
-                print("3. Aceitar missão")
-                print("4. Voltar")
-
-                opcao = input("\nEscolha uma opção: ").strip()
-
-                if opcao == "4":
-                    break
-                elif opcao == "1":
-                    self.listar_missoes_boss_disponiveis()
-                elif opcao == "2":
-                    self.listar_missoes_boss_ativas()
-                elif opcao == "3":
-                    self.aceitar_missao_boss()
-                else:
-                    print("Opção inválida!")
-
-        except Exception as erro:
-            print(f"Erro no menu de missões: {erro}")
-        finally:
-            cursor.close()
-
-    def listar_missoes_boss_disponiveis(self):
-        """Lista todas as missões de boss disponíveis no planeta atual"""
-        cursor = self.conexao.cursor()
-        try:
-            cursor.execute("SELECT * FROM listar_missoes_boss_planeta(%s)", (self.jogador_atual,))
-            missoes = cursor.fetchall()
-
-            if not missoes:
-                print("\nNenhuma missão de boss disponível neste planeta!")
-                return
-
-            print("\n=== Missões de Boss Disponíveis ===")
-            print("ID  | Nome                           | Alvo          | Setor Aceitação    | XP   | GCS  | Nível | Status")
-            print("-" * 110)
-
-            for missao in missoes:
-                id_missao, nome, descricao, alvo, setor, xp, gcs, nivel_min, pode_aceitar, ja_aceita, status = missao
-
-                # Símbolos de status
-                if status == 'concluida':
-                    simbolo = "[X]"
-                elif status == 'ativa':
-                    simbolo = "[A]"
-                elif ja_aceita:
-                    simbolo = "[J]"
-                elif pode_aceitar:
-                    simbolo = "[D]"
-                else:
-                    simbolo = "[B]"
-
-                print(f"{id_missao:<3} | {nome[:29]:<29} | {alvo:<12} | {setor[:17]:<17} | {xp:<4} | {gcs:<4} | {nivel_min:<5} | {simbolo} {status}")
-
-            print("\nLegenda: [X] Concluida | [A] Ativa | [J] Aceita | [D] Disponivel | [B] Bloqueada")
-
-        except Exception as erro:
-            print(f"Erro ao listar missões: {erro}")
-        finally:
-            cursor.close()
-
-    def listar_missoes_boss_ativas(self):
-        """Lista apenas as missões de boss ativas do jogador"""
-        cursor = self.conexao.cursor()
-        try:
-            cursor.execute("""
-                SELECT mb.id_missao_boss, mb.nome_missao, mb.descricao, mb.tipo_mob_alvo,
-                       mb.recompensa_xp, mb.recompensa_gcs, pmb.data_aceitacao
-                FROM Personagem_Missao_Boss pmb
-                JOIN Missao_Boss mb ON pmb.id_missao_boss = mb.id_missao_boss
-                WHERE pmb.id_player = %s AND pmb.status_missao = 'ativa'
-                ORDER BY pmb.data_aceitacao
-            """, (self.jogador_atual,))
-
-            missoes_ativas = cursor.fetchall()
-
-            if not missoes_ativas:
-                print("\nVocê não tem missões de boss ativas no momento.")
-                return
-
-            print("\n=== Suas Missões de Boss Ativas ===")
-            for missao in missoes_ativas:
-                id_missao, nome, descricao, alvo, xp, gcs, data_aceitacao = missao
-                print(f"\n[BOSS] {nome}")
-                print(f"   Objetivo: Eliminar {alvo}")
-                print(f"   Descrição: {descricao}")
-                print(f"   Recompensa: {xp} XP, {gcs} GCS")
-                print(f"   Aceita em: {data_aceitacao.strftime('%d/%m/%Y %H:%M')}")
-
-        except Exception as erro:
-            print(f"Erro ao listar missões ativas: {erro}")
-        finally:
-            cursor.close()
-
-    def aceitar_missao_boss(self):
-        """Permite aceitar uma missão de boss"""
-        cursor = self.conexao.cursor()
-        try:
-            # Primeiro mostrar missões disponíveis
-            self.listar_missoes_boss_disponiveis()
-
-            missao_id = input("\nDigite o ID da missão que deseja aceitar (0 para cancelar): ").strip()
-
-            if missao_id == "0":
-                return
-
+    def menu_inventario(self):
+        """Menu principal do inventário"""
+        while True:
             try:
-                missao_id = int(missao_id)
-            except ValueError:
-                print("ID inválido!")
+                with self.conexao.cursor() as cursor:
+                    cursor.execute("SELECT * FROM listar_inventario_jogador(%s)", (self.jogador_atual,))
+                    itens = cursor.fetchall()
+
+                    cursor.execute("SELECT Peso_Total, Espaco_Maximo FROM Inventario WHERE Id_Player = %s", (self.jogador_atual,))
+                    inv_info = cursor.fetchone()
+
+                    print("\n=== INVENTÁRIO ===")
+                    if not itens:
+                        print("Seu inventário está vazio.")
+                    else:
+                        print(f"Espaço: {inv_info[0]}/{inv_info[1]}")
+                        print("-" * 50)
+                        print("ID  | Nome              | Qtd | Tipo       | Peso")
+                        print("-" * 50)
+                        for item in itens:
+                            id_item, nome, qtd, tipo, peso = item
+                            print(f"{id_item:<3} | {nome:<18} | {qtd:<3} | {tipo:<10} | {peso}")
+                        print("-" * 50)
+
+                    print("\n1. Usar item")
+                    print("2. Voltar")
+
+                    escolha = input("\n> ").strip()
+
+                    if escolha == '1':
+                        if not itens:
+                            print("Você não tem itens para usar.")
+                            continue
+                        self.usar_item_inventario()
+                    elif escolha == '2':
+                        break
+                    else:
+                        print("Opção inválida.")
+
+            except Exception as erro:
+                print(f"Erro ao acessar inventário: {erro}")
+                self.conexao.rollback()
+                break
+
+    def usar_item_inventario(self):
+        """Lógica para usar um item do inventário."""
+        try:
+            item_id_str = input("Digite o ID do item que deseja usar: ")
+            if not item_id_str.isdigit():
+                print("ID inválido. Por favor, digite um número.")
                 return
 
-            # Tentar aceitar a missão
-            cursor.execute("SELECT aceitar_missao_boss(%s, %s)", (self.jogador_atual, missao_id))
-            resultado = cursor.fetchone()[0]
+            item_id = int(item_id_str)
 
-            print(f"\n{resultado}")
+            with self.conexao.cursor() as cursor:
+                # Chama a função do banco de dados
+                cursor.execute("SELECT usar_item_inventario(%s, %s)", (self.jogador_atual, item_id))
+                resultado = cursor.fetchone()[0]
 
-        except Exception as erro:
-            print(f"Erro ao aceitar missão: {erro}")
-        finally:
-            cursor.close()
+                print(f"\n{resultado}")
 
+                if "ERRO:" not in resultado and "não pode ser usado" not in resultado and "não possui este item" not in resultado:
+                    self.conexao.commit()
+                    print("Alterações salvas no banco de dados.")
+                else:
+                    # Se deu erro, garantimos que nada seja salvo.
+                    self.conexao.rollback()
 
-if __name__ == "__main__":
-    jogo = JogoStarWars()
-    jogo.iniciar()
+        except ValueError:
+            print("Entrada inválida.")
+        except (Exception, psycopg2.Error) as error:
+            print(f"Erro ao usar item: {error}")
+            # Desfaz qualquer parte da transação em caso de erro crítico.
+            self.conexao.rollback()
