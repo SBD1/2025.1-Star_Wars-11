@@ -142,11 +142,12 @@ class JogoStarWars:
             print("4. missoes - Ver missões disponíveis")
             print("5. combate - Iniciar combate")
             print("6. inventario - Abrir seu inventário")
-            print("7. sair - Sair do jogo")
+            print("7. loja - Loja de naves")
+            print("8. sair - Sair do jogo")
 
             comando = input("\n> ").lower().strip()
 
-            if comando == "7":
+            if comando == "8":
                 self.jogador_atual = None
                 print("\nSessão encerrada. Voltando para o menu principal...")
                 break
@@ -162,6 +163,8 @@ class JogoStarWars:
                 self.menu_combate()
             elif comando == "6":
                 self.menu_inventario()
+            elif comando == "7":
+                self.menu_loja_naves()
             else:
                 print("Comando não reconhecido!")
 
@@ -762,6 +765,16 @@ class JogoStarWars:
                 # Se fugiu com sucesso, apenas aguardar confirmação
                 input("\nPressione Enter para continuar...")
                 return  # Sair da função sem processar turno do inimigo
+            elif "derrotado" in resultado:
+                # Mob foi derrotado - ativar sistema de respawn
+                try:
+                    cursor.execute("SELECT ativar_respawn_pos_combate(%s)", (combate_id,))
+                    respawn_resultado = cursor.fetchone()[0]
+                    self.conexao.commit()
+                    print(f"\n🔄 Sistema de respawn ativado: {respawn_resultado}")
+                except Exception as e:
+                    print(f"\n⚠️ Aviso: Erro ao ativar respawn: {e}")
+                    # Não é crítico, continuar normalmente
 
         except Exception as erro:
             print(f"Erro ao processar ação do jogador: {erro}")
@@ -1170,3 +1183,250 @@ class JogoStarWars:
             print(f"Erro ao usar item: {error}")
             # Desfaz qualquer parte da transação em caso de erro crítico.
             self.conexao.rollback()
+
+    def menu_loja_naves(self):
+        """Menu principal da loja de naves"""
+        while True:
+            print("\n=== LOJA DE NAVES ===")
+            print("1. Ver naves disponíveis")
+            print("2. Comprar nave")
+            print("3. Vender nave")
+            print("4. Ver minhas naves")
+            print("5. Voltar")
+
+            escolha = input("\nEscolha uma opção: ").strip()
+
+            if escolha == "1":
+                self.listar_naves_loja()
+            elif escolha == "2":
+                self.comprar_nave_loja()
+            elif escolha == "3":
+                self.vender_nave_loja()
+            elif escolha == "4":
+                self.listar_minhas_naves()
+            elif escolha == "5":
+                break
+            else:
+                print("Opção inválida!")
+
+    def listar_naves_loja(self):
+        """Lista naves disponíveis na loja"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("SELECT * FROM listar_naves_disponiveis(%s)", (self.jogador_atual,))
+            naves = cursor.fetchall()
+
+            if not naves:
+                print("\nNenhuma nave disponível na loja.")
+                return
+
+            print("\n=== NAVES DISPONÍVEIS ===")
+            print("ID  | Nome                          | Preço     | Vel | Cap | Nível | Status")
+            print("-" * 85)
+
+            for nave in naves:
+                id_loja, nome, preco, velocidade, capacidade, nivel_min, descricao, pode_comprar, motivo = nave
+                status = "✓ DISPONÍVEL" if pode_comprar else f"✗ {motivo}"
+                print(f"{id_loja:<3} | {nome:<28} | {preco:>8} GCS | {velocidade:<3} | {capacidade:<3} | {nivel_min:<5} | {status}")
+
+            print("-" * 85)
+            print("\nLegenda: Vel=Velocidade, Cap=Capacidade")
+
+        except Exception as erro:
+            print(f"Erro ao listar naves: {erro}")
+        finally:
+            cursor.close()
+
+    def comprar_nave_loja(self):
+        """Compra uma nave da loja"""
+        cursor = self.conexao.cursor()
+        try:
+            # Primeiro mostrar naves disponíveis
+            cursor.execute("SELECT * FROM listar_naves_disponiveis(%s)", (self.jogador_atual,))
+            naves = cursor.fetchall()
+
+            if not naves:
+                print("\nNenhuma nave disponível para compra.")
+                return
+
+            # Filtrar apenas naves que podem ser compradas
+            naves_compraveis = [nave for nave in naves if nave[7]]  # pode_comprar = True
+
+            if not naves_compraveis:
+                print("\nVocê não pode comprar nenhuma nave no momento.")
+                print("Verifique seu nível, créditos e localização.")
+                return
+
+            print("\n=== NAVES DISPONÍVEIS PARA COMPRA ===")
+            print("ID  | Nome                          | Preço     | Vel | Cap | Nível")
+            print("-" * 70)
+
+            for nave in naves_compraveis:
+                id_loja, nome, preco, velocidade, capacidade, nivel_min = nave[:6]
+                print(f"{id_loja:<3} | {nome:<28} | {preco:>8} GCS | {velocidade:<3} | {capacidade:<3} | {nivel_min}")
+
+            print("-" * 70)
+
+            id_nave = input("\nDigite o ID da nave que deseja comprar (0 para cancelar): ").strip()
+
+            if id_nave == "0":
+                return
+
+            try:
+                id_nave = int(id_nave)
+            except ValueError:
+                print("ID inválido!")
+                return
+
+            # Verificar se o ID está na lista de naves compráveis
+            if not any(nave[0] == id_nave for nave in naves_compraveis):
+                print("Nave não disponível para compra!")
+                return
+
+            # Confirmar compra
+            nave_escolhida = next(nave for nave in naves_compraveis if nave[0] == id_nave)
+            nome_nave, preco_nave = nave_escolhida[1], nave_escolhida[2]
+
+            confirmacao = input(f"\nConfirma a compra de '{nome_nave}' por {preco_nave} GCS? (s/n): ").lower().strip()
+
+            if confirmacao != 's':
+                print("Compra cancelada.")
+                return
+
+            # Executar compra
+            cursor.execute("SELECT comprar_nave(%s, %s)", (self.jogador_atual, id_nave))
+            resultado = cursor.fetchone()[0]
+
+            if "Sucesso!" in resultado:
+                self.conexao.commit()
+                print(f"\n🎉 {resultado}")
+            else:
+                self.conexao.rollback()
+                print(f"\n❌ {resultado}")
+
+        except Exception as erro:
+            print(f"Erro ao comprar nave: {erro}")
+            self.conexao.rollback()
+        finally:
+            cursor.close()
+
+    def vender_nave_loja(self):
+        """Vende uma nave do jogador"""
+        cursor = self.conexao.cursor()
+        try:
+            # Listar naves do jogador
+            cursor.execute("""
+                SELECT
+                    n.modelo, n.velocidade, n.capacidade,
+                    CASE
+                        WHEN x.modelo IS NOT NULL THEN 'X-WING T-65'
+                        WHEN y.modelo IS NOT NULL THEN 'YT-1300'
+                        WHEN l.modelo IS NOT NULL THEN 'Lambda Shuttle'
+                        WHEN f.modelo IS NOT NULL THEN 'Fregata CR90'
+                        ELSE 'Desconhecido'
+                    END as tipo_nave
+                FROM Nave n
+                LEFT JOIN X_WING_T65 x ON n.modelo = x.modelo
+                LEFT JOIN YT_1300 y ON n.modelo = y.modelo
+                LEFT JOIN Lambda_Class_Shuttle l ON n.modelo = l.modelo
+                LEFT JOIN Fregata_Corelliana_CR90 f ON n.modelo = f.modelo
+                WHERE n.Id_Player = %s
+            """, (self.jogador_atual,))
+
+            naves = cursor.fetchall()
+
+            if not naves:
+                print("\nVocê não possui nenhuma nave.")
+                return
+
+            if len(naves) == 1:
+                print("\nVocê não pode vender sua única nave!")
+                return
+
+            print("\n=== SUAS NAVES ===")
+            print("Modelo                    | Tipo           | Velocidade | Capacidade")
+            print("-" * 65)
+
+            for nave in naves:
+                modelo, velocidade, capacidade, tipo = nave
+                print(f"{modelo:<24} | {tipo:<14} | {velocidade:<10} | {capacidade}")
+
+            print("-" * 65)
+
+            modelo_venda = input("\nDigite o modelo da nave que deseja vender (ou 'cancelar'): ").strip()
+
+            if modelo_venda.lower() == 'cancelar':
+                return
+
+            # Verificar se a nave existe
+            if not any(nave[0] == modelo_venda for nave in naves):
+                print("Nave não encontrada!")
+                return
+
+            # Confirmar venda
+            confirmacao = input(f"\nConfirma a venda da nave '{modelo_venda}'? (s/n): ").lower().strip()
+
+            if confirmacao != 's':
+                print("Venda cancelada.")
+                return
+
+            # Executar venda
+            cursor.execute("SELECT vender_nave(%s, %s)", (self.jogador_atual, modelo_venda))
+            resultado = cursor.fetchone()[0]
+
+            if "Sucesso!" in resultado:
+                self.conexao.commit()
+                print(f"\n💰 {resultado}")
+            else:
+                self.conexao.rollback()
+                print(f"\n❌ {resultado}")
+
+        except Exception as erro:
+            print(f"Erro ao vender nave: {erro}")
+            self.conexao.rollback()
+        finally:
+            cursor.close()
+
+    def listar_minhas_naves(self):
+        """Lista todas as naves do jogador"""
+        cursor = self.conexao.cursor()
+        try:
+            cursor.execute("""
+                SELECT
+                    n.modelo, n.velocidade, n.capacidade,
+                    CASE
+                        WHEN x.modelo IS NOT NULL THEN 'X-WING T-65'
+                        WHEN y.modelo IS NOT NULL THEN 'YT-1300'
+                        WHEN l.modelo IS NOT NULL THEN 'Lambda Shuttle'
+                        WHEN f.modelo IS NOT NULL THEN 'Fregata CR90'
+                        ELSE 'Desconhecido'
+                    END as tipo_nave
+                FROM Nave n
+                LEFT JOIN X_WING_T65 x ON n.modelo = x.modelo
+                LEFT JOIN YT_1300 y ON n.modelo = y.modelo
+                LEFT JOIN Lambda_Class_Shuttle l ON n.modelo = l.modelo
+                LEFT JOIN Fregata_Corelliana_CR90 f ON n.modelo = f.modelo
+                WHERE n.Id_Player = %s
+                ORDER BY n.modelo
+            """, (self.jogador_atual,))
+
+            naves = cursor.fetchall()
+
+            if not naves:
+                print("\nVocê não possui nenhuma nave.")
+                return
+
+            print(f"\n=== SUAS NAVES ({len(naves)} total) ===")
+            print("Modelo                    | Tipo           | Velocidade | Capacidade")
+            print("-" * 65)
+
+            for nave in naves:
+                modelo, velocidade, capacidade, tipo = nave
+                print(f"{modelo:<24} | {tipo:<14} | {velocidade:<10} | {capacidade}")
+
+            print("-" * 65)
+
+        except Exception as erro:
+            print(f"Erro ao listar naves: {erro}")
+        finally:
+            cursor.close()
