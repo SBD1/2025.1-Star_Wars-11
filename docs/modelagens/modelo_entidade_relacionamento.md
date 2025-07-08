@@ -9,7 +9,7 @@ O modelo foi construído de forma colaborativa, considerando as melhores prátic
 ## Acesso ao Modelo Online
 
 O modelo entidade-relacionamento pode ser visualizado online através do BRModeloWeb:
-- [Visualizar MER no BRModeloWeb](https://app.brmodeloweb.com/#!/publicview/68140cddafaa9fcadd1c98f6)
+- [Visualizar MER no BRModeloWeb]([https://app.brmodeloweb.com/#!/publicview/68140cddafaa9fcadd1c98f6](https://app.brmodeloweb.com/#!/publicview/686c7f2e7664710e8462ed2c))
 
 **Observação:**
 - O link é público e permite apenas visualização, não edição.
