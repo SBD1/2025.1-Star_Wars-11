@@ -145,6 +145,63 @@ Implementação física do banco e desenvolvimento do jogo:
 - **Migrações**: Controle de versão do banco de dados
 - **Jogo MUD**: Aplicação inicial com interface de texto
 
+### 📚 Módulo 3 - Procedures, Generalização, Especialização e Triggers
+Abrange a implementação de procedures, triggers e sistemas de especialização:
+
+- **Sistema de Navegação e Mapa**:
+  - Planetas com múltiplas cidades
+  - Cidades divididas em setores
+  - Níveis de perigo por setor
+  - Sistema de viagem entre planetas/cidades
+
+- **Sistema de Combate**: 
+  - Combate por turnos
+  - Ataques especiais por classe
+  - Cálculo de dano e defesa
+  - Sistema de vida e força
+  - Drops de itens após vitória
+
+- **Sistema de Classes**:
+  - Jedi (poderes da Força)
+  - Sith (habilidades ofensivas)
+  - Caçador de Recompensas (equipamentos)
+
+- **Sistema de Missões**:
+  - Missões por nível e localização
+  - Recompensas (GCS e XP)
+  - Status de progresso
+  - Missões especiais de boss
+
+- **Sistema de Inventário**:
+  - Gerenciamento de itens
+  - Limite de peso/espaço
+  - Uso de itens
+  - Sistema de equipamentos
+
+- **Sistema de Naves**:
+  - Diferentes tipos de naves
+  - Compra/venda de naves
+  - Capacidade e velocidade
+  - Requerimentos de nível
+
+- **Sistema de Progresso**:
+  - Níveis de personagem
+  - Experiência (XP)
+  - Créditos Galácticos (GCS)
+  - Desbloqueio de habilidades
+
+- **Sistema de Inimigos**:
+  - Mobs normais
+  - Mobs de elite
+  - Bosses especiais
+  - Respawn automático
+
+- **Triggers e Automações**:
+  - Conclusão automática de missões
+  - Atualização de inventário pós-combate
+  - Atualização de status do personagem
+  - Sistema de respawn de mobs
+
 ## Documentação Online
 
 Acesse nossa documentação completa em: [Star Wars MUD - Documentação](https://sbd1.github.io/2025.1-Star_Wars-11/)
