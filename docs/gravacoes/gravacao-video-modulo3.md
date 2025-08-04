@@ -1,7 +1,8 @@
-# Documento de Gravação - Entrega do Módulo 2
+# Documento de Gravação - Entrega do Módulo 3
 
 ## Introdução
-Este documento registra a gravação do vídeo de entrega do Módulo 2 do projeto Star Wars, onde o grupo apresentou a implementação prática do banco de dados com os scripts DDL, DML e DQL, além da demonstração do funcionamento do jogo desenvolvido com base nos dados do projeto.
+Este documento registra a gravação do vídeo de entrega do Módulo 3 do projeto Star Wars, onde o grupo apresentou a implementação de uma movimentaçaõ do personagem, um sistema de combate básico, um cron job,
+sistema de compras e vendas de naves.
 
 ### Data da Gravação
 07/07/2025
@@ -13,8 +14,7 @@ Este documento registra a gravação do vídeo de entrega do Módulo 2 do projet
 - Filipe
 
 ### Conteúdo Apresentado
-1. Atualização sobre as Funcionalidades principais que iremos priorizar.
-2. Apresentação do projeto/jogo final.
+1. Apresentação do projeto/jogo final.
 
 ## Vídeo Gravado
 
@@ -28,7 +28,7 @@ A apresentação foi realizada e gravada por meio da plataforma Microsoft Teams.
 1. GOOGLE. *Google Meet*. Disponível em: [https://www.microsoft.com/pt-br/microsoft-teams/log-in](https://www.microsoft.com/pt-br/microsoft-teams/log-in). Acesso em: 16 junho 2025.
 
 ## Observações Finais
-Este documento serve como registro oficial da gravação do vídeo de entrega do Módulo 2, garantindo a transparência e organização do processo de desenvolvimento do projeto.
+Este documento serve como registro oficial da gravação do vídeo de entrega do Módulo 3, garantindo a transparência e organização do processo de desenvolvimento do projeto.
 
 ## Histórico de Versões
 
